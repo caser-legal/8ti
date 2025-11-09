@@ -2,9 +2,8 @@
   CASER SEARCH – COMMAND REFERENCE
   ═══════════════════════════════════════════════════════════════════════════════
 
-> NOTE: The scanner now runs as two shards. Where you see `caser-scan.service`
-> or `caser-scan.timer`, substitute the appropriate shard unit
-> (`caser-scan@0` / `caser-scan@1` and their timers).
+> NOTE: The scanner runs as two shards. Commands below reference
+> `caser-scan@0` / `caser-scan@1` units—swap in the shard index you need.
 
 ### 📺 Live Scanner Output
 
@@ -35,20 +34,23 @@ bash ~/caser-search/scripts/status-check.sh
 
 ```bash
 cd ~/caser-search
-systemctl --user stop caser-scan.service   # optional pause
+systemctl --user stop caser-scan@0.timer caser-scan@1.timer   # optional pause (stops both shards)
 source .venv/bin/activate
-python src/rss_scanner.py
+python src/rss_scanner.py --shard-index 0 --shard-count 2     # adjust shard args as needed
+# python src/rss_scanner.py --shard-index 1 --shard-count 2   # run the second shard if you paused both
 deactivate
-systemctl --user start caser-scan.service
+systemctl --user start caser-scan@0.timer caser-scan@1.timer  # resume scheduled scans
 ```
 
-- Watch `data/scanner.lock`; while it exists another scan is in flight.
+- Watch `data/scanner-shard-<index>.lock`; while it exists that shard is in flight.
 - Manual runs obey the same lock and will exit early if the file is locked.
 
 ### 🔄 Systemd Scanner Status
 
-systemctl --user status caser-scan.service --no-pager
-systemctl --user status caser-scan.timer --no-pager
+systemctl --user status caser-scan@0.service --no-pager
+systemctl --user status caser-scan@1.service --no-pager
+systemctl --user status caser-scan@0.timer --no-pager
+systemctl --user status caser-scan@1.timer --no-pager
 systemctl --user status caser-monitor.timer --no-pager
 systemctl --user status caser-backup.timer --no-pager
 
@@ -60,9 +62,9 @@ systemctl --user status caser-backup.timer --no-pager
 
 ### 🔧 Systemd Control
 
-systemctl --user start caser-scan.service     # Start scan now
-systemctl --user stop caser-scan.service      # Stop current scan
-systemctl --user restart caser-scan.timer     # Restart scanner timer
+systemctl --user start --no-block caser-scan@0.service caser-scan@1.service  # Start scans now
+systemctl --user stop caser-scan@0.service caser-scan@1.service              # Stop current scans
+systemctl --user restart caser-scan@0.timer caser-scan@1.timer               # Restart scanner timers
 systemctl --user restart caser-monitor.timer  # Restart monitor timer
 systemctl --user daemon-reload                # Reload after config changes
 
@@ -213,8 +215,8 @@ deactivate
 - Data (Typesense storage): ~/caser-search/data/
 - Backups: ~/caser-search/backups/
 - Systemd services:
-    - Scanner: ~/.config/systemd/user/caser-scan.service
-    - Scanner timer: ~/.config/systemd/user/caser-scan.timer
+    - Scanner shards: ~/.config/systemd/user/caser-scan@.service (instantiate with @0 and @1)
+    - Scanner timers: ~/.config/systemd/user/caser-scan@0.timer / caser-scan@1.timer
     - Monitor: ~/.config/systemd/user/caser-monitor.service
     - Monitor timer: ~/.config/systemd/user/caser-monitor.timer
     - Backup: ~/.config/systemd/user/caser-backup.service
@@ -241,7 +243,8 @@ deactivate
    tail -50 ~/caser-search/logs/feed-scan.log
 
 4. Check systemd services:
-   systemctl --user status caser-scan.service --no-pager
+   systemctl --user status caser-scan@0.service --no-pager
+   systemctl --user status caser-scan@1.service --no-pager
    systemctl --user status caser-monitor.service --no-pager
    systemctl --user status caser-backup.service --no-pager
 
@@ -250,7 +253,7 @@ deactivate
 
 6. Restart everything:
    cd ~/caser-search && docker compose --env-file config/.env.local restart
-   systemctl --user restart caser-scan.timer
+   systemctl --user restart caser-scan@0.timer caser-scan@1.timer
    systemctl --user restart caser-monitor.timer
 
 7. If scanner fails with 401 errors:
