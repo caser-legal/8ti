@@ -8,8 +8,8 @@ services:
       TYPESENSE_ENABLE_CORS: "false"
     volumes:
       - ./data:/data
-    # ports:
-    #   - "8108:8108" # Removed - Caddy proxies internally, no public exposure needed
+    ports:
+      - "127.0.0.1:8108:8108"  # Localhost only - not exposed to external network
 
   caddy:
     build:
