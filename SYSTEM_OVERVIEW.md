@@ -4,6 +4,14 @@
 
 ## Current Status (Updated: 2025-11-09)
 
+### 🔒 Production Status
+✅ **Fully operational** with recent reliability and security improvements:
+- Firebase token error handling (graceful invalid/expired token handling)
+- HTTP retry logic (3 retries with exponential backoff for 429, 500, 502, 503, 504)
+- Typesense retry wrapper (automatic search failure recovery)
+- Security hardening (Typesense port no longer exposed publicly)
+- Backup verification (ensures snapshot creation succeeds)
+
 ### Statistics
 - **Documents Indexed:** 48,000+ (weekend steady state)
 - **RSS Feeds:** 326 active (174 uscourts + 152 govinfo, 28 inactive)
@@ -26,7 +34,8 @@
 │         ▼                  ▼                  ▼               │
 │  ┌──────────────────────────────────────────────────┐       │
 │  │              Typesense (Docker)                   │       │
-│  │              Port: 8108                           │       │
+│  │              Port: 8108 (internal only)           │       │
+│  │              🔒 NOT exposed publicly              │       │
 │  └──────────────────────────────────────────────────┘       │
 │         │                                                     │
 │         ▼                                                     │
@@ -34,6 +43,7 @@
 │  │              Caddy (Docker)                       │       │
 │  │              Ports: 80, 443                       │       │
 │  │              SSL: Let's Encrypt + Cloudflare      │       │
+│  │              Reverse Proxy to Typesense           │       │
 │  └──────────────────────────────────────────────────┘       │
 │         │                                                     │
 │         ▼                                                     │

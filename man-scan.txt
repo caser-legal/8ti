@@ -1,9 +1,19 @@
   ═══════════════════════════════════════════════════════════════════════════════
   CASER SEARCH – COMMAND REFERENCE
   ═══════════════════════════════════════════════════════════════════════════════
+  Last Updated: 2025-11-09
+  Production Status: ✅ READY
 
 > NOTE: The scanner runs as two shards. Commands below reference
 > `caser-scan@0` / `caser-scan@1` units—swap in the shard index you need.
+
+### 🔒 Recent Production Improvements (2025-11-09)
+
+✅ Firebase token error handling - Gracefully handles invalid/expired FCM tokens
+✅ HTTP retry logic - 3 retries with exponential backoff for transient errors
+✅ Typesense retry wrapper - Automatic retries for search failures
+✅ Security hardening - Typesense port no longer exposed publicly
+✅ Backup verification - Ensures snapshot creation succeeds before proceeding
 
 ### 📺 Live Scanner Output
 
@@ -17,7 +27,7 @@ tail -f /home/sm/caser-search/logs/feed-scan.log
 watch -n 5 '
   source /home/sm/caser-search/config/.env.local 2>/dev/null
   curl -s -H "X-TYPESENSE-API-KEY: ${TYPESENSE_ADMIN_KEY:-$TS_ADMIN_KEY}" \
-    http://localhost:8108/collections/rss_entries | jq ".num_documents"
+  http://localhost:8108/collections/rss_entries | jq ".num_documents"
 '
 
 - Updates every 5 seconds
@@ -122,9 +132,13 @@ cd ~/caser-search && docker compose --env-file config/.env.local up -d
 
 ### 💾 Typesense Commands
 
-# Health check (assumes config/.env.local)
+# Health check (internal access only - assumes config/.env.local)
 source ~/caser-search/config/.env.local 2>/dev/null
 curl -s http://localhost:8108/health | jq
+
+# Note: Port 8108 is NOT exposed publicly for security
+# Access Typesense via Caddy proxy at https://search.caserlegal.com
+# or internally via Docker network at http://typesense:8108
 
 # Collection info
 curl -s -H "X-TYPESENSE-API-KEY: ${TYPESENSE_ADMIN_KEY:-$TS_ADMIN_KEY}" \
@@ -161,9 +175,10 @@ cd ~/caser-search/push-notis && node monitor.js
 ### 💾 Backup & Snapshot Management
 
 ```bash
-# Manual backup (snapshot + seen_ids copy)
+# Manual backup (snapshot + seen_ids copy with verification)
 cd ~/caser-search && bash scripts/backup-typesense.sh
 
+# Script now verifies snapshot creation and exits with error if it fails
 # Check timer status
 systemctl --user status caser-backup.timer --no-pager
 
@@ -284,10 +299,10 @@ deactivate
 ### 🌐 Public API Access
 
 Browser:
-https://search.caserlegal.com/collections/rss_entries/documents/search?q=*&query_by=title&sort_by=pubDate:desc&per_page=50&x-typesense-api-key=YOUR_SEARCH_KEY
+https://search.caserlegal.com/collections/rss_entries/documents/search?q=*&query_by=title&sort_by=pubDate:desc&per_page=50&x-typesense-api-key=FW8ZHUZJuetnl9jbPKt1WciZpDt7Xa8i
 
 Curl:
-SEARCH_KEY=<your-search-key-here>
+SEARCH_KEY=<FW8ZHUZJuetnl9jbPKt1WciZpDt7Xa8i>
 curl "https://search.caserlegal.com/collections/rss_entries/documents/search" \
   -G \
   --data-urlencode "q=*" \

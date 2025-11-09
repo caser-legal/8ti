@@ -2,13 +2,25 @@
 
 # CASER Search - Self-Hosted Legal Document Search Engine
 
-[![Status](https://img.shields.io/badge/status-operational-brightgreen)]()
+[![Status](https://img.shields.io/badge/status-production-brightgreen)]()
 [![Documents](https://img.shields.io/badge/documents-1.2M+-blue)]()
 [![Feeds](https://img.shields.io/badge/feeds-322-orange)]()
+[![Updated](https://img.shields.io/badge/updated-2025--11--09-blue)]()
 
 **Production-grade legal search platform monitoring 322 federal court RSS feeds.**
 
 🔗 **Live at:** [https://search.caserlegal.com](https://search.caserlegal.com)
+
+---
+
+## 🔒 Production Status (Updated 2025-11-09)
+
+✅ **Fully operational** with recent reliability and security improvements:
+- Firebase token error handling (graceful invalid/expired token handling)
+- HTTP retry logic (3 retries with exponential backoff)
+- Typesense retry wrapper (automatic search failure recovery)
+- Security hardening (Typesense port no longer exposed publicly)
+- Backup verification (ensures snapshot creation succeeds)
 
 ---
 
@@ -102,10 +114,9 @@ docker compose --env-file config/.env.local up -d
 sleep 10
 docker compose --env-file config/.env.local ps  # Should show 2 containers running
 ```
-> Need to keep `http://localhost:8108` reachable from WSL for the scanner and
-> troubleshooting scripts. If you later decide to hide Typesense behind Caddy,
-> remove the `8108:8108` port mapping from `docker-compose.yml` **and** run the
-> scanner inside the same Docker network (or tunnel via Caddy).
+> **Security Note:** Typesense port 8108 is NOT exposed publicly. Access is only
+> available via internal Docker network or through Caddy reverse proxy at
+> https://search.caserlegal.com. This prevents unauthorized direct access.
 
 **7. Setup Systemd Timers**
 ```bash
