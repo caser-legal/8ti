@@ -8,8 +8,8 @@ services:
       TYPESENSE_ENABLE_CORS: "false"
     volumes:
       - ./data:/data
-    ports:
-      - "8108:8108" # remove this line to restrict Typesense to the internal network only
+    # ports:
+    #   - "8108:8108" # Removed - Caddy proxies internally, no public exposure needed
 
   caddy:
     build:

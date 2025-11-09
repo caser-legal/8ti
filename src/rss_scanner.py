@@ -133,6 +133,23 @@ HEADERS = {
 SESSION = requests.Session()
 SESSION.headers.update(HEADERS)
 
+# Configure retry logic and connection pooling
+from urllib3.util import Retry
+from requests.adapters import HTTPAdapter
+
+retries = Retry(
+    total=3,
+    backoff_factor=0.3,
+    status_forcelist=[429, 500, 502, 503, 504]
+)
+adapter = HTTPAdapter(
+    max_retries=retries,
+    pool_connections=20,
+    pool_maxsize=50
+)
+SESSION.mount('http://', adapter)
+SESSION.mount('https://', adapter)
+
 
 def lock_path_for_shard(shard_index: int) -> Path:
     return SCAN_LOCK_DIR / f"scanner-shard-{shard_index}.lock"

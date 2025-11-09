@@ -24,10 +24,23 @@ fi
 
 mkdir -p "$BACKUP_DIR"
 
-# Create Typesense snapshot (pretty-print when jq is available)
+# Create Typesense snapshot
 SNAPSHOT_RESPONSE=$(curl -s -X POST \
   -H "X-TYPESENSE-API-KEY: $API_KEY" \
   "http://localhost:8108/operations/snapshot?snapshot_path=$BACKUP_PATH")
+
+# Verify snapshot succeeded
+if ! echo "$SNAPSHOT_RESPONSE" | grep -q '"success":true'; then
+  echo "❌ Typesense snapshot creation failed!" >&2
+  if command -v jq >/dev/null 2>&1; then
+    printf '%s\n' "$SNAPSHOT_RESPONSE" | jq
+  else
+    printf '%s\n' "$SNAPSHOT_RESPONSE"
+  fi
+  exit 1
+fi
+
+# Pretty-print success response
 if command -v jq >/dev/null 2>&1; then
   printf '%s\n' "$SNAPSHOT_RESPONSE" | jq
 else

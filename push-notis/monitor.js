@@ -109,6 +109,17 @@ const timestampField = (date = new Date()) => Timestamp.fromDate(date);
 
 // --- Typesense search -----------------------------------------------------------
 
+async function typesenseSearchWithRetry(searchParams, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await typesenseClient.collections('rss_entries').documents().search(searchParams);
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+    }
+  }
+}
+
 async function searchTypesense(keyword, lastCheckedAt) {
   const hits = [];
   let page = 1;
@@ -135,7 +146,7 @@ async function searchTypesense(keyword, lastCheckedAt) {
       filter_by: filterBy
     };
 
-    const response = await typesenseClient.collections('rss_entries').documents().search(searchParams);
+    const response = await typesenseSearchWithRetry(searchParams);
     const pageHits = response.hits ?? [];
     for (const hit of pageHits) {
       const entry = hit.document;
@@ -260,6 +271,11 @@ async function sendNotification(token, keyword, entry) {
     });
     return true;
   } catch (error) {
+    if (error.code === 'messaging/invalid-registration-token' ||
+        error.code === 'messaging/registration-token-not-registered') {
+      console.warn(`⚠️ Invalid/expired FCM token ${token?.slice(0, 8)}…`);
+      return null;
+    }
     console.error(`⚠️ Failed to send push to token ${token?.slice(0, 8)}…: ${error.message}`);
     return false;
   }
@@ -273,7 +289,6 @@ async function processKeyword({ userId, keyword, keywordIndex, fcmToken }) {
   const lastCheckedAt = toDate(keyword.lastCheckedAt) ?? new Date(0);
   const entries = await searchTypesense(keyword, lastCheckedAt);
   if (!entries.length) {
-    await updateKeywordCheckpoint(userId, keywordIndex, new Date());
     return 0;
   }
 
@@ -292,7 +307,9 @@ async function processKeyword({ userId, keyword, keywordIndex, fcmToken }) {
     }
   }
 
-  await updateKeywordCheckpoint(userId, keywordIndex, new Date());
+  if (createdMatches > 0) {
+    await updateKeywordCheckpoint(userId, keywordIndex, new Date());
+  }
   return createdMatches;
 }
 
