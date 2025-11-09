@@ -426,8 +426,19 @@ def fetch_and_parse(url: str, name: str) -> Optional[feedparser.FeedParserDict]:
 
     for mode, target in attempts:
         try:
-            response = SESSION.get(target, timeout=(5, 15))
+            response = SESSION.get(target, timeout=(5, 15), stream=True)
             response.raise_for_status()
+            
+            # Enforce size limit to prevent memory exhaustion
+            max_size = 10 * 1024 * 1024  # 10MB
+            content = b''
+            for chunk in response.iter_content(chunk_size=8192):
+                content += chunk
+                if len(content) > max_size:
+                    raise ValueError(f"Response too large for {name} (>{max_size} bytes)")
+            
+            # Replace response content with size-limited version
+            response._content = content
         except requests.exceptions.RequestException as exc:
             last_error = f"{mode} request error: {exc}"
             logger.warning("%s fetch failed for %s (%s): %s", mode.upper(), name, url, exc)
@@ -437,6 +448,10 @@ def fetch_and_parse(url: str, name: str) -> Optional[feedparser.FeedParserDict]:
                     logger.error("Proxy-only mode: skipping direct for %s", name)
                     break
             continue
+        except ValueError as exc:
+            last_error = str(exc)
+            logger.error("%s: %s", mode.upper(), exc)
+            break
 
         content_type = (response.headers.get("content-type") or "").lower()
         body = response.content
@@ -779,6 +794,24 @@ def run_once(
                 duplicates_total,
                 duration,
             )
+            
+            # Alert if high feed failure rate
+            if total_feeds > 0:
+                failure_rate = skipped_feeds / total_feeds
+                if failure_rate > 0.10:  # Alert if >10% of feeds fail
+                    alert_webhook = os.getenv("ALERT_WEBHOOK_URL")
+                    if alert_webhook:
+                        try:
+                            import requests as alert_requests
+                            alert_requests.post(
+                                alert_webhook,
+                                json={
+                                    "text": f"⚠️ High feed failure rate on caser-search: {failure_rate*100:.0f}% ({skipped_feeds}/{total_feeds} feeds failed)"
+                                },
+                                timeout=10
+                            )
+                        except Exception as exc:
+                            logger.warning("Failed to send alert webhook: %s", exc)
 
             RUN_ID = None
     finally:

@@ -37,12 +37,41 @@ if ! echo "$SNAPSHOT_RESPONSE" | grep -q '"success":true'; then
   else
     printf '%s\n' "$SNAPSHOT_RESPONSE"
   fi
+  
+  # Send alert webhook if configured
+  if [[ -n "${ALERT_WEBHOOK_URL:-}" ]]; then
+    curl -X POST "$ALERT_WEBHOOK_URL" \
+      -H "Content-Type: application/json" \
+      -d "{\"text\":\"❌ Backup failed on caser-search at $(date '+%Y-%m-%d %H:%M:%S %Z')\"}" \
+      --silent --show-error --max-time 10 || true
+  fi
+  
   exit 1
 fi
 
 # Pretty-print success response
 if command -v jq >/dev/null 2>&1; then
   printf '%s\n' "$SNAPSHOT_RESPONSE" | jq
+else
+  printf '%s\n' "$SNAPSHOT_RESPONSE"
+fi
+
+# Encrypt snapshot if encryption key is set
+if [[ -n "${BACKUP_ENCRYPTION_KEY:-}" ]]; then
+  echo "🔒 Encrypting backup..."
+  tar czf - "$BACKUP_PATH" | \
+    openssl enc -aes-256-cbc -salt -pbkdf2 \
+    -pass pass:"$BACKUP_ENCRYPTION_KEY" \
+    -out "$BACKUP_DIR/typesense_$TIMESTAMP.tar.gz.enc"
+  
+  # Remove unencrypted snapshot after successful encryption
+  if [[ -f "$BACKUP_DIR/typesense_$TIMESTAMP.tar.gz.enc" ]]; then
+    rm -rf "$BACKUP_PATH"
+    echo "✅ Encrypted backup: typesense_$TIMESTAMP.tar.gz.enc"
+  fi
+else
+  echo "⚠️ BACKUP_ENCRYPTION_KEY not set - backup stored unencrypted"
+fi
 else
   printf '%s\n' "$SNAPSHOT_RESPONSE"
 fi
@@ -55,6 +84,7 @@ fi
 
 # Keep only last 7 days of backups
 find "$BACKUP_DIR" -name "typesense_*" -mtime +7 -exec rm -rf {} \;
+find "$BACKUP_DIR" -name "*.tar.gz.enc" -mtime +7 -delete
 find "$BACKUP_DIR" -name "seen_ids_*.txt" -mtime +7 -delete
 find "$BACKUP_DIR" -name "seen_ids_*.sqlite3" -mtime +7 -delete
 
