@@ -1,5 +1,7 @@
 # CASER Search - System Overview
 
+> For the full runbook (setup, automation, recovery), see `readme.md` in the repo root.
+
 ## Current Status (Updated: 2025-11-09)
 
 ### Statistics
