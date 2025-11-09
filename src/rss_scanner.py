@@ -364,6 +364,50 @@ def push_batch(batch: List[Dict[str, object]]) -> int:
     if not batch:
         return 0
 
+    # Check for monitored case
+    case_webhook = os.getenv("CASE_MONITOR_WEBHOOK_URL")
+    monitored_case = os.getenv("MONITORED_CASE", "").lower()
+    
+    if case_webhook and monitored_case:
+        for doc in batch:
+            title = doc.get("title", "")
+            if monitored_case in title.lower():
+                try:
+                    import requests as alert_requests
+                    alert_requests.post(
+                        case_webhook,
+                        json={
+                            "attachments": [{
+                                "color": "#9C27B0",
+                                "blocks": [
+                                    {
+                                        "type": "header",
+                                        "text": {"type": "plain_text", "text": "🔔 MONITORED CASE UPDATE"}
+                                    },
+                                    {
+                                        "type": "section",
+                                        "fields": [
+                                            {"type": "mrkdwn", "text": f"*Case:*\n{monitored_case.title()}"},
+                                            {"type": "mrkdwn", "text": f"*Court:*\n{doc.get('court', 'Unknown')}"},
+                                            {"type": "mrkdwn", "text": f"*Title:*\n{title}"},
+                                            {"type": "mrkdwn", "text": f"*Date:*\n{doc.get('pubDate', 'Unknown')}"}
+                                        ]
+                                    },
+                                    {
+                                        "type": "section",
+                                        "text": {
+                                            "type": "mrkdwn",
+                                            "text": f"<{doc.get('link', '#')}|View Document>"
+                                        }
+                                    }
+                                ]
+                            }]
+                        },
+                        timeout=10
+                    )
+                except Exception as exc:
+                    logger.warning("Failed to send case monitoring alert: %s", exc)
+
     ndjson = "\n".join(json.dumps(doc, ensure_ascii=False) for doc in batch)
     for attempt in range(5):
         try:
@@ -627,6 +671,38 @@ def run_once(
 
         start_time = datetime.now(timezone.utc)
         tracker.start_scan(shard_index=shard_idx, shard_count=shard_total)
+        
+        # Send start alert
+        alert_webhook = os.getenv("ALERT_WEBHOOK_URL")
+        if alert_webhook:
+            try:
+                import requests as alert_requests
+                alert_requests.post(
+                    alert_webhook,
+                    json={
+                        "attachments": [{
+                            "color": "#36a64f",
+                            "blocks": [
+                                {
+                                    "type": "header",
+                                    "text": {"type": "plain_text", "text": "🚀 SCAN INITIATED"}
+                                },
+                                {
+                                    "type": "section",
+                                    "fields": [
+                                        {"type": "mrkdwn", "text": f"*Run ID:*\n`{RUN_ID}`"},
+                                        {"type": "mrkdwn", "text": f"*Shard:*\n{shard_idx + 1}/{shard_total}"},
+                                        {"type": "mrkdwn", "text": f"*Started:*\n{start_time.strftime('%H:%M:%S UTC')}"},
+                                        {"type": "mrkdwn", "text": f"*Status:*\nProcessing feeds..."}
+                                    ]
+                                }
+                            ]
+                        }]
+                    },
+                    timeout=10
+                )
+            except Exception:
+                pass
 
         feeds = load_feeds()
         if limit:
@@ -652,6 +728,7 @@ def run_once(
         docs_created = 0
         duplicates_total = 0
         error: Optional[str] = None
+        last_milestone = 0
 
         pending_ids: List[str] = []
 
@@ -747,6 +824,38 @@ def run_once(
                     duplicates_in_feed,
                     docs_created,
                 )
+                
+                # Send milestone alert every 100K docs
+                if docs_created // 100000 > last_milestone:
+                    last_milestone = docs_created // 100000
+                    if alert_webhook:
+                        try:
+                            alert_requests.post(
+                                alert_webhook,
+                                json={
+                                    "attachments": [{
+                                        "color": "#2196F3",
+                                        "blocks": [
+                                            {
+                                                "type": "section",
+                                                "text": {
+                                                    "type": "mrkdwn",
+                                                    "text": f"📊 *MILESTONE REACHED*\n`{last_milestone * 100}K` documents indexed"
+                                                }
+                                            },
+                                            {
+                                                "type": "context",
+                                                "elements": [
+                                                    {"type": "mrkdwn", "text": f"Run: `{RUN_ID}` • Feed: {index}/{total_feeds}"}
+                                                ]
+                                            }
+                                        ]
+                                    }]
+                                },
+                                timeout=10
+                            )
+                        except Exception:
+                            pass
 
                 time.sleep(0.5)
 
@@ -795,6 +904,46 @@ def run_once(
                 duration,
             )
             
+            # Send completion alert
+            if alert_webhook:
+                try:
+                    color = "#36a64f" if status == "completed" else "#ff0000"
+                    emoji = "✅" if status == "completed" else "❌"
+                    alert_requests.post(
+                        alert_webhook,
+                        json={
+                            "attachments": [{
+                                "color": color,
+                                "blocks": [
+                                    {
+                                        "type": "header",
+                                        "text": {"type": "plain_text", "text": f"{emoji} SCAN {status.upper()}"}
+                                    },
+                                    {
+                                        "type": "section",
+                                        "fields": [
+                                            {"type": "mrkdwn", "text": f"*Run ID:*\n`{RUN_ID}`"},
+                                            {"type": "mrkdwn", "text": f"*Duration:*\n{int(duration//60)}m {int(duration%60)}s"},
+                                            {"type": "mrkdwn", "text": f"*Feeds Processed:*\n{ok_feeds}/{total_feeds}"},
+                                            {"type": "mrkdwn", "text": f"*Feeds Failed:*\n{skipped_feeds}"},
+                                            {"type": "mrkdwn", "text": f"*New Documents:*\n{docs_created:,}"},
+                                            {"type": "mrkdwn", "text": f"*Duplicates Skipped:*\n{duplicates_total:,}"}
+                                        ]
+                                    },
+                                    {
+                                        "type": "context",
+                                        "elements": [
+                                            {"type": "mrkdwn", "text": f"Completed at {end_time.strftime('%H:%M:%S UTC')}"}
+                                        ]
+                                    }
+                                ]
+                            }]
+                        },
+                        timeout=10
+                    )
+                except Exception:
+                    pass
+            
             # Alert if high feed failure rate
             if total_feeds > 0:
                 failure_rate = skipped_feeds / total_feeds
@@ -806,7 +955,24 @@ def run_once(
                             alert_requests.post(
                                 alert_webhook,
                                 json={
-                                    "text": f"⚠️ High feed failure rate on caser-search: {failure_rate*100:.0f}% ({skipped_feeds}/{total_feeds} feeds failed)"
+                                    "attachments": [{
+                                        "color": "#ff9800",
+                                        "blocks": [
+                                            {
+                                                "type": "header",
+                                                "text": {"type": "plain_text", "text": "⚠️ HIGH FAILURE RATE DETECTED"}
+                                            },
+                                            {
+                                                "type": "section",
+                                                "fields": [
+                                                    {"type": "mrkdwn", "text": f"*Failure Rate:*\n{failure_rate*100:.1f}%"},
+                                                    {"type": "mrkdwn", "text": f"*Failed Feeds:*\n{skipped_feeds}/{total_feeds}"},
+                                                    {"type": "mrkdwn", "text": f"*Run ID:*\n`{RUN_ID}`"},
+                                                    {"type": "mrkdwn", "text": f"*Action Required:*\nInvestigate feed sources"}
+                                                ]
+                                            }
+                                        ]
+                                    }]
                                 },
                                 timeout=10
                             )

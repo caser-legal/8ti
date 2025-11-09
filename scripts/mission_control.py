@@ -260,8 +260,6 @@ def render(snapshot: Dict[str, Any]) -> None:
     status_label = colour(last_status.upper(), last_status_colour)
     run_human = format_run_id(last_run_id)
 
-    # Intentionally hide feeds/docs summary lines per user request
-
     started_at = history.get("startedAt") or state.get("last_scan_start")
     ended_at = history.get("endedAt") or state.get("last_scan_end")
     duration = None
@@ -282,48 +280,58 @@ def render(snapshot: Dict[str, Any]) -> None:
 
     feeds = snapshot["feeds"]
 
-    print("\033[2J\033[H", end="")  # Clear screen
-    print(f"{BOLD}CASER Mission Control{RESET} — {now}")
-    print("=" * 60)
-    print(f"{BOLD}Services{RESET}")
-    print(f"  Typesense   {ts_status:<8} docs: {ts_docs:<15} ({ts_message})")
-    print(f"  Docker      {docker_status}")
-    print()
-    print(f"{BOLD}Feeds Monitored{RESET}")
-    print(f"  uscourts    {feeds['uscourts']}")
-    print(f"  govinfo     {feeds['govinfo']}")
-    print()
+    # Move cursor to home position and update in place
+    sys.stdout.write('\033[H')
+    
+    lines = []
+    lines.append(f"{BOLD}CASER Mission Control{RESET} — {now}")
+    lines.append("=" * 80)
+    lines.append(f"{BOLD}Services{RESET}")
+    lines.append(f"  Typesense   {ts_status:<8} docs: {ts_docs:<15} ({ts_message})")
+    lines.append(f"  Docker      {docker_status}")
+    lines.append("")
+    lines.append(f"{BOLD}Feeds Monitored{RESET}")
+    lines.append(f"  uscourts    {feeds['uscourts']}")
+    lines.append(f"  govinfo     {feeds['govinfo']}")
+    lines.append("")
     run_label = f"{last_run_id}"
     if run_human:
         run_label = f"{last_run_id} / {run_human}"
-    print(f"{BOLD}Latest Run{RESET} ({run_label})")
-    print(f"  Status      {status_label}", end="")
+    lines.append(f"{BOLD}Latest Run{RESET} ({run_label})")
+    status_line = f"  Status      {status_label}"
     if duration:
-        print(f"  duration: {duration}")
-    else:
-        print()
-    # Feeds and Docs lines removed
+        status_line += f"  duration: {duration}"
+    lines.append(status_line)
     if started_at:
-        print(f"  Started     {format_pacific(started_dt)}")
+        lines.append(f"  Started     {format_pacific(started_dt)}")
     if ended_at:
-        print(f"  Ended       {format_pacific(ended_dt)}")
-    print(f"{BOLD}Index Overview{RESET}")
-    print(f"  Documents   {ts_docs}")
-    print(f"  Data Size   {data_size}")
-
-    # Recent scan log tail (always show last 5 lines)
-    print()
-    print(f"{BOLD}Log Tail{RESET} (last 5 lines)")
-    log_tail = tail_lines(LOG_FILE_PATH, 5)
+        lines.append(f"  Ended       {format_pacific(ended_dt)}")
+    lines.append("")
+    lines.append(f"{BOLD}Index Overview{RESET}")
+    lines.append(f"  Documents   {ts_docs}")
+    lines.append(f"  Data Size   {data_size}")
+    lines.append("")
+    log_tail_count = 30
+    lines.append(f"{BOLD}Log Tail{RESET} (last {log_tail_count} lines)")
+    log_tail = tail_lines(LOG_FILE_PATH, log_tail_count)
     if log_tail:
         for line in log_tail:
-            # already contains newline
-            print(line.rstrip())
+            lines.append(line.rstrip())
     else:
-        print("  (no log yet)")
+        lines.append("  (no log yet)")
+    
+    # Write each line with clear to end of line
+    for line in lines:
+        sys.stdout.write(f'\r{line}\033[K\n')
+    
+    # Clear remaining lines on screen
+    sys.stdout.write('\033[J')
+    sys.stdout.flush()
 
 
 def main() -> None:
+    # Clear screen once on startup
+    print("\033[2J\033[H", end="", flush=True)
     try:
         while True:
             snapshot = collect_snapshot()

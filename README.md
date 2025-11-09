@@ -47,6 +47,10 @@ A **self-hosted legal document search engine** that automatically monitors **322
 ✅ Runs 24/7 on spare PC using Docker + WSL2  
 ✅ Daily automated backups (7-day retention)  
 ✅ Push notifications via Firebase (every 5 minutes)  
+✅ **Mission Control Slack alerts** - Real-time scan status, milestones, errors  
+✅ **Case monitoring** - Instant alerts for specific cases  
+✅ **10MB feed size limit** - Prevents memory exhaustion  
+✅ **Auto-restart on reboot** - Systemd + Docker restart policies  
 
 ---
 
@@ -561,6 +565,32 @@ requests      # HTTP client
 feedparser    # RSS/Atom parser
 python-dotenv # Environment variables
 ```
+
+---
+
+## Alerting & Monitoring
+
+The system sends real-time Slack notifications using Mission Control style formatting:
+
+**System Alerts** (`ALERT_WEBHOOK_URL`):
+- 🚀 **Scan start** - When each scan begins with run ID and shard info
+- ✅ **Scan completion** - Dashboard with feeds processed, new docs, duration
+- 📊 **Milestones** - Every 100K documents indexed
+- ⚠️ **High failure rate** - When >10% of feeds fail (requires investigation)
+
+**Case Monitoring** (`CASE_MONITOR_WEBHOOK_URL`):
+- 🔔 **Instant alerts** when monitored cases have new documents
+- Includes case name, court, title, date, and link
+- Configure via `MONITORED_CASE` environment variable
+
+**Setup:**
+1. Create Slack incoming webhooks at https://api.slack.com/apps
+2. Add to `config/.env.local`:
+   ```bash
+   ALERT_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+   CASE_MONITOR_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/CASE/WEBHOOK
+   MONITORED_CASE=Case Name Here
+   ```
 
 ---
 
