@@ -1,0 +1,1370 @@
+[
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-alnd.xml",
+    "name": "U.S. District Court  District of ALND",
+    "state": "ALND",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-alnd",
+    "courtId": "uscourts-alnd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-alsd.xml",
+    "name": "U.S. District Court  District of ALSD",
+    "state": "ALSD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-alsd",
+    "courtId": "uscourts-alsd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-almd.xml",
+    "name": "U.S. District Court  District of ALMD",
+    "state": "ALMD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-almd",
+    "courtId": "uscourts-almd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-akd.xml",
+    "name": "U.S. District Court  District of AKD",
+    "state": "AKD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-akd",
+    "courtId": "uscourts-akd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-azd.xml",
+    "name": "U.S. District Court  District of AZD",
+    "state": "AZD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-azd",
+    "courtId": "uscourts-azd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ared.xml",
+    "name": "U.S. District Court  District of ARED",
+    "state": "ARED",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ared",
+    "courtId": "uscourts-ared"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-caed.xml",
+    "name": "U.S. Court of Appeals ED Circuit",
+    "state": "Federal",
+    "type": "Appellate Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-caed",
+    "courtId": "uscourts-caed"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-cand.xml",
+    "name": "U.S. Court of Appeals ND Circuit",
+    "state": "Federal",
+    "type": "Appellate Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-cand",
+    "courtId": "uscourts-cand"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-casd.xml",
+    "name": "U.S. Court of Appeals SD Circuit",
+    "state": "Federal",
+    "type": "Appellate Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-casd",
+    "courtId": "uscourts-casd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-cod.xml",
+    "name": "U.S. District Court  District of COD",
+    "state": "COD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-cod",
+    "courtId": "uscourts-cod"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ctd.xml",
+    "name": "U.S. District Court  District of CTD",
+    "state": "CTD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ctd",
+    "courtId": "uscourts-ctd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-dcd.xml",
+    "name": "U.S. District Court  District of DCD",
+    "state": "DCD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-dcd",
+    "courtId": "uscourts-dcd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ded.xml",
+    "name": "U.S. District Court  District of DED",
+    "state": "DED",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ded",
+    "courtId": "uscourts-ded"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-flsd.xml",
+    "name": "U.S. District Court  District of FLSD",
+    "state": "FLSD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-flsd",
+    "courtId": "uscourts-flsd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-flnd.xml",
+    "name": "U.S. District Court  District of FLND",
+    "state": "FLND",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-flnd",
+    "courtId": "uscourts-flnd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-gamd.xml",
+    "name": "U.S. District Court  District of GAMD",
+    "state": "GAMD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-gamd",
+    "courtId": "uscourts-gamd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-gand.xml",
+    "name": "U.S. District Court  District of GAND",
+    "state": "GAND",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-gand",
+    "courtId": "uscourts-gand"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-gud.xml",
+    "name": "U.S. District Court  District of GUD",
+    "state": "GUD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-gud",
+    "courtId": "uscourts-gud"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-hid.xml",
+    "name": "U.S. District Court  District of HID",
+    "state": "HID",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-hid",
+    "courtId": "uscourts-hid"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-idd.xml",
+    "name": "U.S. District Court  District of IDD",
+    "state": "IDD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-idd",
+    "courtId": "uscourts-idd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ilnd.xml",
+    "name": "U.S. District Court  District of ILND",
+    "state": "ILND",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ilnd",
+    "courtId": "uscourts-ilnd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ilsd.xml",
+    "name": "U.S. District Court  District of ILSD",
+    "state": "ILSD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ilsd",
+    "courtId": "uscourts-ilsd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-insd.xml",
+    "name": "U.S. District Court  District of INSD",
+    "state": "INSD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-insd",
+    "courtId": "uscourts-insd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-iand.xml",
+    "name": "U.S. District Court  District of IAND",
+    "state": "IAND",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-iand",
+    "courtId": "uscourts-iand"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ksd.xml",
+    "name": "U.S. District Court  District of KSD",
+    "state": "KSD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ksd",
+    "courtId": "uscourts-ksd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-kyed.xml",
+    "name": "U.S. District Court  District of KYED",
+    "state": "KYED",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-kyed",
+    "courtId": "uscourts-kyed"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-kywd.xml",
+    "name": "U.S. District Court  District of KYWD",
+    "state": "KYWD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-kywd",
+    "courtId": "uscourts-kywd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-laed.xml",
+    "name": "U.S. District Court  District of LAED",
+    "state": "LAED",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-laed",
+    "courtId": "uscourts-laed"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-lamd.xml",
+    "name": "U.S. District Court  District of LAMD",
+    "state": "LAMD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-lamd",
+    "courtId": "uscourts-lamd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-med.xml",
+    "name": "U.S. District Court  District of MED",
+    "state": "MED",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-med",
+    "courtId": "uscourts-med"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-mdd.xml",
+    "name": "U.S. District Court  District of MDD",
+    "state": "MDD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-mdd",
+    "courtId": "uscourts-mdd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-mad.xml",
+    "name": "U.S. District Court  District of MAD",
+    "state": "MAD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-mad",
+    "courtId": "uscourts-mad"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-mied.xml",
+    "name": "U.S. District Court  District of MIED",
+    "state": "MIED",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-mied",
+    "courtId": "uscourts-mied"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-miwd.xml",
+    "name": "U.S. District Court  District of MIWD",
+    "state": "MIWD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-miwd",
+    "courtId": "uscourts-miwd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-mnd.xml",
+    "name": "U.S. District Court  District of MND",
+    "state": "MND",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-mnd",
+    "courtId": "uscourts-mnd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-moed.xml",
+    "name": "U.S. District Court  District of MOED",
+    "state": "MOED",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-moed",
+    "courtId": "uscourts-moed"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-mowd.xml",
+    "name": "U.S. District Court  District of MOWD",
+    "state": "MOWD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-mowd",
+    "courtId": "uscourts-mowd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-mtd.xml",
+    "name": "U.S. District Court  District of MTD",
+    "state": "MTD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-mtd",
+    "courtId": "uscourts-mtd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ned.xml",
+    "name": "U.S. District Court  District of NED",
+    "state": "NED",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ned",
+    "courtId": "uscourts-ned"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-nhd.xml",
+    "name": "U.S. District Court  District of NHD",
+    "state": "NHD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-nhd",
+    "courtId": "uscourts-nhd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-njd.xml",
+    "name": "U.S. District Court  District of NJD",
+    "state": "NJD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-njd",
+    "courtId": "uscourts-njd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-nmd.xml",
+    "name": "U.S. District Court  District of NMD",
+    "state": "NMD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-nmd",
+    "courtId": "uscourts-nmd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-nyed.xml",
+    "name": "U.S. District Court  District of NYED",
+    "state": "NYED",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-nyed",
+    "courtId": "uscourts-nyed"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-nynd.xml",
+    "name": "U.S. District Court  District of NYND",
+    "state": "NYND",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-nynd",
+    "courtId": "uscourts-nynd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ncmd.xml",
+    "name": "U.S. District Court  District of NCMD",
+    "state": "NCMD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ncmd",
+    "courtId": "uscourts-ncmd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ncwd.xml",
+    "name": "U.S. District Court  District of NCWD",
+    "state": "NCWD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ncwd",
+    "courtId": "uscourts-ncwd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ndd.xml",
+    "name": "U.S. District Court  District of NDD",
+    "state": "NDD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ndd",
+    "courtId": "uscourts-ndd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-nmid.xml",
+    "name": "U.S. District Court  District of NMID",
+    "state": "NMID",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-nmid",
+    "courtId": "uscourts-nmid"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ohnd.xml",
+    "name": "U.S. District Court  District of OHND",
+    "state": "OHND",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ohnd",
+    "courtId": "uscourts-ohnd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ohsd.xml",
+    "name": "U.S. District Court  District of OHSD",
+    "state": "OHSD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ohsd",
+    "courtId": "uscourts-ohsd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-oked.xml",
+    "name": "U.S. District Court  District of OKED",
+    "state": "OKED",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-oked",
+    "courtId": "uscourts-oked"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-okwd.xml",
+    "name": "U.S. District Court  District of OKWD",
+    "state": "OKWD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-okwd",
+    "courtId": "uscourts-okwd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ord.xml",
+    "name": "U.S. District Court  District of ORD",
+    "state": "ORD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ord",
+    "courtId": "uscourts-ord"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-paed.xml",
+    "name": "U.S. District Court  District of PAED",
+    "state": "PAED",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-paed",
+    "courtId": "uscourts-paed"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-pamd.xml",
+    "name": "U.S. District Court  District of PAMD",
+    "state": "PAMD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-pamd",
+    "courtId": "uscourts-pamd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-pawd.xml",
+    "name": "U.S. District Court  District of PAWD",
+    "state": "PAWD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-pawd",
+    "courtId": "uscourts-pawd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-prd.xml",
+    "name": "U.S. District Court  District of PRD",
+    "state": "PRD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-prd",
+    "courtId": "uscourts-prd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-rid.xml",
+    "name": "U.S. District Court  District of RID",
+    "state": "RID",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-rid",
+    "courtId": "uscourts-rid"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-sdd.xml",
+    "name": "U.S. District Court  District of SDD",
+    "state": "SDD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-sdd",
+    "courtId": "uscourts-sdd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-tned.xml",
+    "name": "U.S. District Court  District of TNED",
+    "state": "TNED",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-tned",
+    "courtId": "uscourts-tned"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-tnwd.xml",
+    "name": "U.S. District Court  District of TNWD",
+    "state": "TNWD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-tnwd",
+    "courtId": "uscourts-tnwd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-tnmd.xml",
+    "name": "U.S. District Court  District of TNMD",
+    "state": "TNMD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-tnmd",
+    "courtId": "uscourts-tnmd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-txed.xml",
+    "name": "U.S. District Court  District of TXED",
+    "state": "TXED",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-txed",
+    "courtId": "uscourts-txed"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-txnd.xml",
+    "name": "U.S. District Court  District of TXND",
+    "state": "TXND",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-txnd",
+    "courtId": "uscourts-txnd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-txsd.xml",
+    "name": "U.S. District Court  District of TXSD",
+    "state": "TXSD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-txsd",
+    "courtId": "uscourts-txsd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-txwd.xml",
+    "name": "U.S. District Court  District of TXWD",
+    "state": "TXWD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-txwd",
+    "courtId": "uscourts-txwd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-utd.xml",
+    "name": "U.S. District Court  District of UTD",
+    "state": "UTD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-utd",
+    "courtId": "uscourts-utd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-vid.xml",
+    "name": "U.S. District Court  District of VID",
+    "state": "VID",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-vid",
+    "courtId": "uscourts-vid"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-vtd.xml",
+    "name": "U.S. District Court  District of VTD",
+    "state": "VTD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-vtd",
+    "courtId": "uscourts-vtd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-waed.xml",
+    "name": "U.S. District Court  District of WAED",
+    "state": "WAED",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-waed",
+    "courtId": "uscourts-waed"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-wiwd.xml",
+    "name": "U.S. District Court  District of WIWD",
+    "state": "WIWD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-wiwd",
+    "courtId": "uscourts-wiwd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-wvnd.xml",
+    "name": "U.S. District Court  District of WVND",
+    "state": "WVND",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-wvnd",
+    "courtId": "uscourts-wvnd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-wyd.xml",
+    "name": "U.S. District Court  District of WYD",
+    "state": "WYD",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-wyd",
+    "courtId": "uscourts-wyd"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-cadc.xml",
+    "name": "U.S. Court of Appeals DC Circuit",
+    "state": "Federal",
+    "type": "Appellate Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-cadc",
+    "courtId": "uscourts-cadc"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-almb.xml",
+    "name": "U.S. District Court  District of ALMB",
+    "state": "ALMB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-almb",
+    "courtId": "uscourts-almb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-alnb.xml",
+    "name": "U.S. District Court  District of ALNB",
+    "state": "ALNB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-alnb",
+    "courtId": "uscourts-alnb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-alsb.xml",
+    "name": "U.S. District Court  District of ALSB",
+    "state": "ALSB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-alsb",
+    "courtId": "uscourts-alsb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-akb.xml",
+    "name": "U.S. District Court  District of AKB",
+    "state": "AKB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-akb",
+    "courtId": "uscourts-akb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-areb.xml",
+    "name": "U.S. District Court  District of AREB",
+    "state": "AREB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-areb",
+    "courtId": "uscourts-areb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-arwb.xml",
+    "name": "U.S. District Court  District of ARWB",
+    "state": "ARWB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-arwb",
+    "courtId": "uscourts-arwb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-azb.xml",
+    "name": "U.S. District Court  District of AZB",
+    "state": "AZB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-azb",
+    "courtId": "uscourts-azb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-caeb.xml",
+    "name": "U.S. Court of Appeals EB Circuit",
+    "state": "Federal",
+    "type": "Appellate Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-caeb",
+    "courtId": "uscourts-caeb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-canb.xml",
+    "name": "U.S. Court of Appeals NB Circuit",
+    "state": "Federal",
+    "type": "Appellate Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-canb",
+    "courtId": "uscourts-canb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-cacb.xml",
+    "name": "U.S. Court of Appeals CB Circuit",
+    "state": "Federal",
+    "type": "Appellate Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-cacb",
+    "courtId": "uscourts-cacb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-cob.xml",
+    "name": "U.S. District Court  District of COB",
+    "state": "COB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-cob",
+    "courtId": "uscourts-cob"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-dcb.xml",
+    "name": "U.S. District Court  District of DCB",
+    "state": "DCB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-dcb",
+    "courtId": "uscourts-dcb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ctb.xml",
+    "name": "U.S. District Court  District of CTB",
+    "state": "CTB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ctb",
+    "courtId": "uscourts-ctb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-deb.xml",
+    "name": "U.S. District Court  District of DEB",
+    "state": "DEB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-deb",
+    "courtId": "uscourts-deb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-flsb.xml",
+    "name": "U.S. District Court  District of FLSB",
+    "state": "FLSB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-flsb",
+    "courtId": "uscourts-flsb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-flmb.xml",
+    "name": "U.S. District Court  District of FLMB",
+    "state": "FLMB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-flmb",
+    "courtId": "uscourts-flmb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ganb.xml",
+    "name": "U.S. District Court  District of GANB",
+    "state": "GANB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ganb",
+    "courtId": "uscourts-ganb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-gamb.xml",
+    "name": "U.S. District Court  District of GAMB",
+    "state": "GAMB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-gamb",
+    "courtId": "uscourts-gamb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-hib.xml",
+    "name": "U.S. District Court  District of HIB",
+    "state": "HIB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-hib",
+    "courtId": "uscourts-hib"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ilnb.xml",
+    "name": "U.S. District Court  District of ILNB",
+    "state": "ILNB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ilnb",
+    "courtId": "uscourts-ilnb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ilsb.xml",
+    "name": "U.S. District Court  District of ILSB",
+    "state": "ILSB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ilsb",
+    "courtId": "uscourts-ilsb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ilcb.xml",
+    "name": "U.S. District Court  District of ILCB",
+    "state": "ILCB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ilcb",
+    "courtId": "uscourts-ilcb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-insb.xml",
+    "name": "U.S. District Court  District of INSB",
+    "state": "INSB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-insb",
+    "courtId": "uscourts-insb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ianb.xml",
+    "name": "U.S. District Court  District of IANB",
+    "state": "IANB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ianb",
+    "courtId": "uscourts-ianb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-kyeb.xml",
+    "name": "U.S. District Court  District of KYEB",
+    "state": "KYEB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-kyeb",
+    "courtId": "uscourts-kyeb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-kywb.xml",
+    "name": "U.S. District Court  District of KYWB",
+    "state": "KYWB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-kywb",
+    "courtId": "uscourts-kywb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-laeb.xml",
+    "name": "U.S. District Court  District of LAEB",
+    "state": "LAEB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-laeb",
+    "courtId": "uscourts-laeb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-lawb.xml",
+    "name": "U.S. District Court  District of LAWB",
+    "state": "LAWB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-lawb",
+    "courtId": "uscourts-lawb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-lamb.xml",
+    "name": "U.S. District Court  District of LAMB",
+    "state": "LAMB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-lamb",
+    "courtId": "uscourts-lamb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-meb.xml",
+    "name": "U.S. District Court  District of MEB",
+    "state": "MEB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-meb",
+    "courtId": "uscourts-meb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-mdb.xml",
+    "name": "U.S. District Court  District of MDB",
+    "state": "MDB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-mdb",
+    "courtId": "uscourts-mdb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-mab.xml",
+    "name": "U.S. District Court  District of MAB",
+    "state": "MAB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-mab",
+    "courtId": "uscourts-mab"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-miwb.xml",
+    "name": "U.S. District Court  District of MIWB",
+    "state": "MIWB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-miwb",
+    "courtId": "uscourts-miwb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-mnb.xml",
+    "name": "U.S. District Court  District of MNB",
+    "state": "MNB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-mnb",
+    "courtId": "uscourts-mnb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-msnb.xml",
+    "name": "U.S. District Court  District of MSNB",
+    "state": "MSNB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-msnb",
+    "courtId": "uscourts-msnb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-moeb.xml",
+    "name": "U.S. District Court  District of MOEB",
+    "state": "MOEB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-moeb",
+    "courtId": "uscourts-moeb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-mowb.xml",
+    "name": "U.S. District Court  District of MOWB",
+    "state": "MOWB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-mowb",
+    "courtId": "uscourts-mowb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-mtb.xml",
+    "name": "U.S. District Court  District of MTB",
+    "state": "MTB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-mtb",
+    "courtId": "uscourts-mtb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-neb.xml",
+    "name": "U.S. District Court  District of NEB",
+    "state": "NEB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-neb",
+    "courtId": "uscourts-neb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-nvb.xml",
+    "name": "U.S. District Court  District of NVB",
+    "state": "NVB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-nvb",
+    "courtId": "uscourts-nvb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-nhb.xml",
+    "name": "U.S. District Court  District of NHB",
+    "state": "NHB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-nhb",
+    "courtId": "uscourts-nhb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-njb.xml",
+    "name": "U.S. District Court  District of NJB",
+    "state": "NJB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-njb",
+    "courtId": "uscourts-njb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-nmb.xml",
+    "name": "U.S. District Court  District of NMB",
+    "state": "NMB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-nmb",
+    "courtId": "uscourts-nmb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-nyeb.xml",
+    "name": "U.S. District Court  District of NYEB",
+    "state": "NYEB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-nyeb",
+    "courtId": "uscourts-nyeb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-nynb.xml",
+    "name": "U.S. District Court  District of NYNB",
+    "state": "NYNB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-nynb",
+    "courtId": "uscourts-nynb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-nysb.xml",
+    "name": "U.S. District Court  District of NYSB",
+    "state": "NYSB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-nysb",
+    "courtId": "uscourts-nysb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-nywb.xml",
+    "name": "U.S. District Court  District of NYWB",
+    "state": "NYWB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-nywb",
+    "courtId": "uscourts-nywb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-nceb.xml",
+    "name": "U.S. District Court  District of NCEB",
+    "state": "NCEB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-nceb",
+    "courtId": "uscourts-nceb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ncwb.xml",
+    "name": "U.S. District Court  District of NCWB",
+    "state": "NCWB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ncwb",
+    "courtId": "uscourts-ncwb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ndb.xml",
+    "name": "U.S. District Court  District of NDB",
+    "state": "NDB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ndb",
+    "courtId": "uscourts-ndb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ohnb.xml",
+    "name": "U.S. District Court  District of OHNB",
+    "state": "OHNB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ohnb",
+    "courtId": "uscourts-ohnb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-ohsb.xml",
+    "name": "U.S. District Court  District of OHSB",
+    "state": "OHSB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-ohsb",
+    "courtId": "uscourts-ohsb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-okeb.xml",
+    "name": "U.S. District Court  District of OKEB",
+    "state": "OKEB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-okeb",
+    "courtId": "uscourts-okeb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-oknb.xml",
+    "name": "U.S. District Court  District of OKNB",
+    "state": "OKNB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-oknb",
+    "courtId": "uscourts-oknb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-okwb.xml",
+    "name": "U.S. District Court  District of OKWB",
+    "state": "OKWB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-okwb",
+    "courtId": "uscourts-okwb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-orb.xml",
+    "name": "U.S. District Court  District of ORB",
+    "state": "ORB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-orb",
+    "courtId": "uscourts-orb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-paeb.xml",
+    "name": "U.S. District Court  District of PAEB",
+    "state": "PAEB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-paeb",
+    "courtId": "uscourts-paeb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-pamb.xml",
+    "name": "U.S. District Court  District of PAMB",
+    "state": "PAMB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-pamb",
+    "courtId": "uscourts-pamb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-pawb.xml",
+    "name": "U.S. District Court  District of PAWB",
+    "state": "PAWB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-pawb",
+    "courtId": "uscourts-pawb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-prb.xml",
+    "name": "U.S. District Court  District of PRB",
+    "state": "PRB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-prb",
+    "courtId": "uscourts-prb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-rib.xml",
+    "name": "U.S. District Court  District of RIB",
+    "state": "RIB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-rib",
+    "courtId": "uscourts-rib"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-scb.xml",
+    "name": "U.S. District Court  District of SCB",
+    "state": "SCB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-scb",
+    "courtId": "uscourts-scb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-sdb.xml",
+    "name": "U.S. District Court  District of SDB",
+    "state": "SDB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-sdb",
+    "courtId": "uscourts-sdb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-tneb.xml",
+    "name": "U.S. District Court  District of TNEB",
+    "state": "TNEB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-tneb",
+    "courtId": "uscourts-tneb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-tnmb.xml",
+    "name": "U.S. District Court  District of TNMB",
+    "state": "TNMB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-tnmb",
+    "courtId": "uscourts-tnmb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-txsb.xml",
+    "name": "U.S. District Court  District of TXSB",
+    "state": "TXSB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-txsb",
+    "courtId": "uscourts-txsb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-txwb.xml",
+    "name": "U.S. District Court  District of TXWB",
+    "state": "TXWB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-txwb",
+    "courtId": "uscourts-txwb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-vawb.xml",
+    "name": "U.S. District Court  District of VAWB",
+    "state": "VAWB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-vawb",
+    "courtId": "uscourts-vawb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-vib.xml",
+    "name": "U.S. District Court  District of VIB",
+    "state": "VIB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-vib",
+    "courtId": "uscourts-vib"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-waeb.xml",
+    "name": "U.S. District Court  District of WAEB",
+    "state": "WAEB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-waeb",
+    "courtId": "uscourts-waeb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-wawb.xml",
+    "name": "U.S. District Court  District of WAWB",
+    "state": "WAWB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-wawb",
+    "courtId": "uscourts-wawb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-wvnb.xml",
+    "name": "U.S. District Court  District of WVNB",
+    "state": "WVNB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-wvnb",
+    "courtId": "uscourts-wvnb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-wieb.xml",
+    "name": "U.S. District Court  District of WIEB",
+    "state": "WIEB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-wieb",
+    "courtId": "uscourts-wieb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-wiwb.xml",
+    "name": "U.S. District Court  District of WIWB",
+    "state": "WIWB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-wiwb",
+    "courtId": "uscourts-wiwb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-wyb.xml",
+    "name": "U.S. District Court  District of WYB",
+    "state": "WYB",
+    "type": "District Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-wyb",
+    "courtId": "uscourts-wyb"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-jpml.xml",
+    "name": "JPML",
+    "state": "Federal",
+    "type": "Special Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-jpml",
+    "courtId": "uscourts-jpml"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-cit.xml",
+    "name": "CIT",
+    "state": "Federal",
+    "type": "Special Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-cit",
+    "courtId": "uscourts-cit"
+  },
+  {
+    "url": "https://www.govinfo.gov/rss/uscourts-cofc.xml",
+    "name": "COFC",
+    "state": "Federal",
+    "type": "Special Court",
+    "timezone": "US/Eastern",
+    "feedId": "uscourts-cofc",
+    "courtId": "uscourts-cofc"
+  }
+]

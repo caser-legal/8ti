@@ -1,0 +1,48 @@
+#!/bin/bash
+set -euo pipefail
+
+REPO_DIR="/home/sm/caser-search"
+BACKUP_DIR="$REPO_DIR/backups"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+BACKUP_PATH="$BACKUP_DIR/typesense_$TIMESTAMP"
+ENV_LOCAL="$REPO_DIR/config/.env.local"
+ENV_FALLBACK="$REPO_DIR/config/.env"
+
+if [[ -f "$ENV_LOCAL" ]]; then
+  # shellcheck disable=SC1090
+  source "$ENV_LOCAL"
+elif [[ -f "$ENV_FALLBACK" ]]; then
+  # shellcheck disable=SC1090
+  source "$ENV_FALLBACK"
+fi
+
+API_KEY="${TYPESENSE_ADMIN_KEY:-${TS_ADMIN_KEY:-}}"
+if [[ -z "$API_KEY" ]]; then
+  echo "TYPESENSE_ADMIN_KEY or TS_ADMIN_KEY must be set in config/.env.local" >&2
+  exit 1
+fi
+
+mkdir -p "$BACKUP_DIR"
+
+# Create Typesense snapshot (pretty-print when jq is available)
+SNAPSHOT_RESPONSE=$(curl -s -X POST \
+  -H "X-TYPESENSE-API-KEY: $API_KEY" \
+  "http://localhost:8108/operations/snapshot?snapshot_path=$BACKUP_PATH")
+if command -v jq >/dev/null 2>&1; then
+  printf '%s\n' "$SNAPSHOT_RESPONSE" | jq
+else
+  printf '%s\n' "$SNAPSHOT_RESPONSE"
+fi
+
+# Backup seen_ids
+cp "$REPO_DIR/data/seen_ids.txt" "$BACKUP_DIR/seen_ids_$TIMESTAMP.txt"
+if [[ -f "$REPO_DIR/data/seen_ids.sqlite3" ]]; then
+  cp "$REPO_DIR/data/seen_ids.sqlite3" "$BACKUP_DIR/seen_ids_$TIMESTAMP.sqlite3"
+fi
+
+# Keep only last 7 days of backups
+find "$BACKUP_DIR" -name "typesense_*" -mtime +7 -exec rm -rf {} \;
+find "$BACKUP_DIR" -name "seen_ids_*.txt" -mtime +7 -delete
+find "$BACKUP_DIR" -name "seen_ids_*.sqlite3" -mtime +7 -delete
+
+echo "Backup completed: $BACKUP_PATH"

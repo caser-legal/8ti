@@ -1,0 +1,300 @@
+  ═══════════════════════════════════════════════════════════════════════════════
+  CASER SEARCH – COMMAND REFERENCE
+  ═══════════════════════════════════════════════════════════════════════════════
+
+> NOTE: The scanner now runs as two shards. Where you see `caser-scan.service`
+> or `caser-scan.timer`, substitute the appropriate shard unit
+> (`caser-scan@0` / `caser-scan@1` and their timers).
+
+### 📺 Live Scanner Output
+
+tail -f /home/sm/caser-search/logs/feed-scan.log
+
+- Shows real-time scanner progress
+- Ctrl+C to exit
+
+### 📊 Live Document Count
+
+watch -n 5 '
+  source /home/sm/caser-search/config/.env.local 2>/dev/null
+  curl -s -H "X-TYPESENSE-API-KEY: ${TYPESENSE_ADMIN_KEY:-$TS_ADMIN_KEY}" \
+    http://localhost:8108/collections/rss_entries | jq ".num_documents"
+'
+
+- Updates every 5 seconds
+- Ctrl+C to exit
+
+### 📊 Quick Status Check
+
+bash ~/caser-search/scripts/status-check.sh
+
+- Shows Docker status, Typesense health, document count, and latest run summary
+- No scan is triggered (read-only health check)
+
+### 🚀 Manual Scan (With Lock Awareness)
+
+```bash
+cd ~/caser-search
+systemctl --user stop caser-scan.service   # optional pause
+source .venv/bin/activate
+python src/rss_scanner.py
+deactivate
+systemctl --user start caser-scan.service
+```
+
+- Watch `data/scanner.lock`; while it exists another scan is in flight.
+- Manual runs obey the same lock and will exit early if the file is locked.
+
+### 🔄 Systemd Scanner Status
+
+systemctl --user status caser-scan.service --no-pager
+systemctl --user status caser-scan.timer --no-pager
+systemctl --user status caser-monitor.timer --no-pager
+systemctl --user status caser-backup.timer --no-pager
+
+- Check if scanner service is running
+- Check timer schedules
+- Scanner: every 10 minutes
+- Monitor: every 5 minutes
+- Backup: daily at 3 AM
+
+### 🔧 Systemd Control
+
+systemctl --user start caser-scan.service     # Start scan now
+systemctl --user stop caser-scan.service      # Stop current scan
+systemctl --user restart caser-scan.timer     # Restart scanner timer
+systemctl --user restart caser-monitor.timer  # Restart monitor timer
+systemctl --user daemon-reload                # Reload after config changes
+
+# View all CASER timers
+systemctl --user list-timers | grep caser
+
+### 📜 View Recent Scan History
+
+tail -20 /home/sm/caser-search/logs/scan-history.ndjson | jq -r '[.timestamp, .status, .feeds_ok, .docs_new] | @tsv'
+
+- Shows last 20 scan runs with timestamp, status, feeds processed, and new docs
+- Also shows the `run` UUID that appears inside `logs/feed-scan.log`
+
+### 🔐 Scanner Lock Status
+
+```bash
+LOCKS=(/home/sm/caser-search/data/scanner-shard-*.lock)
+if ls /home/sm/caser-search/data/scanner-shard-*.lock >/dev/null 2>&1; then
+  for LOCK in "${LOCKS[@]}"; do
+    [[ -e "$LOCK" ]] || continue
+    printf "%s locked by pid %s\n" "$(basename "$LOCK")" "$(cat "$LOCK")"
+  done
+else
+  echo "scanner idle"
+fi
+pgrep -af rss_scanner
+```
+
+- Use before manual scans or service restarts.
+- If a PID lingers after a crash, stop the shard (`systemctl --user stop caser-scan@N.service`) and remove the matching lock.
+
+### 🔍 Filter Logs by Run ID
+
+# Get latest run ID
+RUN_ID=$(tail -1 /home/sm/caser-search/logs/scan-history.ndjson | jq -r .run_id)
+
+# View that run's logs
+grep "$RUN_ID" /home/sm/caser-search/logs/feed-scan.log
+
+### 📊 Mission Control (Live Dashboard)
+
+cd ~/caser-search && source .venv/bin/activate && python scripts/mission_control.py
+
+- Live dashboard refreshes every 2 seconds
+- Displays service health, feed sources, latest run, and recent log lines
+- Ctrl+C to exit
+
+### 🐳 Docker Commands
+
+cd ~/caser-search && docker compose --env-file config/.env.local ps
+cd ~/caser-search && docker compose --env-file config/.env.local logs -f
+cd ~/caser-search && docker compose --env-file config/.env.local restart
+cd ~/caser-search && docker compose --env-file config/.env.local down
+cd ~/caser-search && docker compose --env-file config/.env.local up -d
+
+### 💾 Typesense Commands
+
+# Health check (assumes config/.env.local)
+source ~/caser-search/config/.env.local 2>/dev/null
+curl -s http://localhost:8108/health | jq
+
+# Collection info
+curl -s -H "X-TYPESENSE-API-KEY: ${TYPESENSE_ADMIN_KEY:-$TS_ADMIN_KEY}" \
+  http://localhost:8108/collections/rss_entries | jq
+
+# Search example
+curl -s -H "X-TYPESENSE-API-KEY: ${TYPESENSE_ADMIN_KEY:-$TS_ADMIN_KEY}" \
+  'http://localhost:8108/collections/rss_entries/documents/search?q=bankruptcy&query_by=title,description&per_page=5' | jq
+
+# Document count only
+curl -s -H "X-TYPESENSE-API-KEY: ${TYPESENSE_ADMIN_KEY:-$TS_ADMIN_KEY}" \
+  http://localhost:8108/collections/rss_entries | jq '.num_documents'
+
+### 🧮 Doc Count vs. Cache Lines
+
+```bash
+source ~/caser-search/config/.env.local 2>/dev/null
+DOCS=$(curl -s -H "X-TYPESENSE-API-KEY: ${TYPESENSE_ADMIN_KEY:-$TS_ADMIN_KEY}" \
+  http://localhost:8108/collections/rss_entries | jq '.num_documents')
+IDS=$(wc -l < ~/caser-search/data/seen_ids.txt)
+printf "typesense=%s seen_cache=%s delta=%s\n" "$DOCS" "$IDS" "$((IDS-DOCS))"
+```
+
+- Delta should stay near zero. If it drifts, run the dedupe + rebuild flow below.
+
+### 🔧 Monitor Script (Firebase Push Notifications)
+
+cd ~/caser-search/push-notis && node monitor.js
+
+- Checks for new matches and sends Firebase notifications
+- Runs automatically every 5 minutes via systemd timer
+- Manual test: run the command above
+
+### 💾 Backup & Snapshot Management
+
+```bash
+# Manual backup (snapshot + seen_ids copy)
+cd ~/caser-search && bash scripts/backup-typesense.sh
+
+# Check timer status
+systemctl --user status caser-backup.timer --no-pager
+
+# List snapshot directories (inside Typesense container)
+docker compose exec typesense ls /home/sm/caser-search/backups
+
+# List local seen_ids copies
+ls -lh ~/caser-search/backups/seen_ids_*.txt
+```
+
+- Automatic backups run daily at 3 AM (7-day retention).
+- Snapshots live inside the Typesense container bind mount (`typesense_*`).
+- Each backup also saves `seen_ids_<timestamp>.txt` on the host.
+
+### 🧹 Deduplicate & Rebuild Runbook
+
+```bash
+cd ~/caser-search
+source .venv/bin/activate
+bash scripts/backup-typesense.sh
+python scripts/dedupe_typesense.py
+python scripts/rebuild_seen_cache.py
+deactivate
+```
+
+- `dedupe_typesense.py` exports all docs, keeps the newest per `objectID`,
+  drops/re-creates the collection, and re-imports with strict result checking.
+- Always follow it with `rebuild_seen_cache.py` to realign `data/seen_ids.txt`.
+- Use when Typesense shows duplicates or the cache/doc counts drift.
+
+### 📁 File Locations
+
+- Main project: ~/caser-search/
+- Scanner: ~/caser-search/src/rss_scanner.py
+- Govinfo harvester: ~/caser-search/src/govinfo_harvester.py
+- Scheduled scan script: ~/caser-search/scripts/run-scheduled-scan.sh
+- Manual scan script: ~/caser-search/scripts/scan-now.sh
+- Backup script: ~/caser-search/scripts/backup-typesense.sh
+- Monitor script: ~/caser-search/push-notis/monitor.js
+- Feed lists:
+    - U.S. courts: ~/caser-search/config/uscourts-filtered-feed.json (202 feeds, 174 active)
+    - Govinfo: ~/caser-search/config/govinfo-filtered-feed.json (152 feeds, all active)
+- Logs:
+    - Scanner log: ~/caser-search/logs/feed-scan.log
+    - Scan history: ~/caser-search/logs/scan-history.ndjson
+- Config:
+    - Environment: ~/caser-search/config/.env.local
+    - Docker compose: ~/caser-search/docker-compose.yml
+- Data (Typesense storage): ~/caser-search/data/
+- Backups: ~/caser-search/backups/
+- Systemd services:
+    - Scanner: ~/.config/systemd/user/caser-scan.service
+    - Scanner timer: ~/.config/systemd/user/caser-scan.timer
+    - Monitor: ~/.config/systemd/user/caser-monitor.service
+    - Monitor timer: ~/.config/systemd/user/caser-monitor.timer
+    - Backup: ~/.config/systemd/user/caser-backup.service
+    - Backup timer: ~/.config/systemd/user/caser-backup.timer
+
+### ⏰ Automated Scanning
+
+- Scanner: Runs every 10 minutes via systemd timer
+- Monitor: Runs every 5 minutes via systemd timer
+- Backup: Runs daily at 3 AM via systemd timer
+- Full feed coverage (uscourts + govinfo)
+- 24/7 operation with auto-start on boot (user linger enabled)
+- Check status: systemctl --user list-timers | grep caser
+
+### 🔍 Troubleshooting
+
+1. Check Docker containers:
+   docker compose --env-file ~/caser-search/config/.env.local ps
+
+2. Check Typesense health:
+   curl http://localhost:8108/health
+
+3. Check recent logs:
+   tail -50 ~/caser-search/logs/feed-scan.log
+
+4. Check systemd services:
+   systemctl --user status caser-scan.service --no-pager
+   systemctl --user status caser-monitor.service --no-pager
+   systemctl --user status caser-backup.service --no-pager
+
+5. Check all timers:
+   systemctl --user list-timers | grep caser
+
+6. Restart everything:
+   cd ~/caser-search && docker compose --env-file config/.env.local restart
+   systemctl --user restart caser-scan.timer
+   systemctl --user restart caser-monitor.timer
+
+7. If scanner fails with 401 errors:
+   - Verify config/.env.local has correct TYPESENSE_ADMIN_KEY
+   - Restart Docker: docker compose --env-file config/.env.local restart
+   - Reload systemd: systemctl --user daemon-reload
+
+8. If system doesn't auto-start on boot:
+   - Check linger: loginctl show-user $USER | grep Linger
+   - Enable if needed: sudo loginctl enable-linger $USER
+
+9. Check backups:
+   ls -lh ~/caser-search/backups/
+   systemctl --user status caser-backup.timer --no-pager
+
+### 📊 System Stats
+
+- Total feeds: 326 active (174 uscourts + 152 govinfo, 28 inactive)
+- Scan frequency: every 10 minutes (systemd timer)
+- Monitor frequency: every 5 minutes (Firebase push notifications)
+- Backup frequency: daily at 3 AM (7-day retention)
+- Sources: U.S. federal court RSS feeds, govinfo opinions
+- Search engine: Typesense 29.0
+- Storage: local (WSL Ubuntu)
+- Public endpoint: https://search.caserlegal.com
+- Auto-start: Enabled (systemd user linger)
+
+### 🌐 Public API Access
+
+Browser:
+https://search.caserlegal.com/collections/rss_entries/documents/search?q=*&query_by=title&sort_by=pubDate:desc&per_page=50&x-typesense-api-key=YOUR_SEARCH_KEY
+
+Curl:
+SEARCH_KEY=<your-search-key-here>
+curl "https://search.caserlegal.com/collections/rss_entries/documents/search" \
+  -G \
+  --data-urlencode "q=*" \
+  --data-urlencode "query_by=title" \
+  --data-urlencode "sort_by=pubDate:desc" \
+  --data-urlencode "per_page=50" \
+  -H "X-TYPESENSE-API-KEY: $SEARCH_KEY"
+
+Replace YOUR_SEARCH_KEY with a read-only key generated via scripts/admin/generate_search_key.py
+
+  ═══════════════════════════════════════════════════════════════════════════════
+  END OF REFERENCE
+  ═══════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,47 @@
+search.caserlegal.com {
+    rate_limit {
+        zone search {
+            key {http.request.remote.host}
+            events 100
+            window 1m
+        }
+    }
+
+    log {
+        output stdout
+        format json
+    }
+
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        -Server
+    }
+
+    handle_path /health {
+        respond "ok" 200
+    }
+
+    @root path /
+    handle @root {
+        respond "CASER Search is running" 200
+    }
+
+    handle {
+        reverse_proxy typesense:8108 {
+            health_uri /health
+            health_interval 30s
+            health_timeout 5s
+        }
+    }
+
+    tls {
+        dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+    }
+}
+
+http://search.caserlegal.com {
+    redir https://search.caserlegal.com{uri} permanent
+}
