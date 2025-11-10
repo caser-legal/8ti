@@ -1,0 +1,11 @@
+[Unit]
+Description=CASER Monitor Timer - Run every 5 minutes
+Requires=caser-monitor.service
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

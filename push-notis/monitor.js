@@ -22,6 +22,13 @@ const {
   SEARCH_TIMEOUT_SECONDS = '5'
 } = process.env;
 
+// --- Push notification constants ------------------------------------------------
+const BURST_THRESHOLD = 10;
+const RATE_LIMIT_WINDOW_MS = 30000;
+const RATE_LIMIT_MAX_PUSHES = 5;
+const sentMatchIds = new Set();
+const userPushTimestamps = new Map();
+
 const credentialPath = SERVICE_ACCOUNT_PATH || GOOGLE_APPLICATION_CREDENTIALS;
 if (!credentialPath) {
   console.error('❌ Missing SERVICE_ACCOUNT_PATH (or GOOGLE_APPLICATION_CREDENTIALS).');
@@ -244,39 +251,96 @@ async function updateKeywordCheckpoint(userId, keywordIndex, checkpoint) {
   });
 }
 
-async function sendNotification(token, keyword, entry) {
-  if (!token) return;
+async function getUnreadCount(userId) {
+  const snapshot = await db.collection('user_matches').doc(userId).collection('matches')
+    .where('read', '==', false).count().get();
+  return snapshot.data().count || 0;
+}
+
+async function sendNotification(userId, token, keyword, entry, matchId) {
+  if (!token) return false;
+  if (sentMatchIds.has(matchId)) return false;
+
+  const unreadCount = await getUnreadCount(userId);
+  
   try {
     await messaging.send({
       token,
-      notification: {
-        title: `Monitor match: ${keyword.term}`,
-        body: entry.title ?? 'New filing matched your alert.'
-      },
-      data: {
-        matchKeyword: keyword.term,
-        caseTitle: entry.title ?? '',
-        link: entry.link ?? ''
-      },
       apns: {
+        headers: {
+          'apns-priority': '10',
+          'apns-push-type': 'alert'
+        },
         payload: {
           aps: {
+            alert: {
+              title: `Monitor match: ${keyword.term}`,
+              body: entry.title ?? 'New filing matched your alert.'
+            },
             sound: 'default',
-            badge: 1,
-            'thread-id': 'caser-monitor-alerts',
-            'interruption-level': keyword.isCritical ? 'time-sensitive' : 'active'
-          }
+            'thread-id': 'alerts',
+            badge: unreadCount
+          },
+          matchId,
+          link: entry.link ?? ''
+        }
+      }
+    });
+    sentMatchIds.add(matchId);
+    return true;
+  } catch (error) {
+    if (error.code === 'messaging/invalid-registration-token' ||
+        error.code === 'messaging/registration-token-not-registered' ||
+        error.message?.includes('Auth error from APNS')) {
+      console.warn(`⚠️ Invalid/expired FCM token for user ${userId}`);
+      await db.collection('user_settings').doc(userId).update({ fcmToken: admin.firestore.FieldValue.delete() });
+      return null;
+    }
+    console.error(`⚠️ Failed to send push to user ${userId}: ${error.message}`);
+    return false;
+  }
+}
+
+async function sendSummaryNotification(userId, token, matchCount, latestKeyword, latestLink = '') {
+  if (!token) return false;
+  
+  const unreadCount = await getUnreadCount(userId);
+  const summaryMatchId = `summary-${Date.now()}`;
+  
+  try {
+    await messaging.send({
+      token,
+      apns: {
+        headers: {
+          'apns-priority': '10',
+          'apns-push-type': 'alert',
+          'apns-collapse-id': 'alerts-summary'
+        },
+        payload: {
+          aps: {
+            alert: {
+              title: `${matchCount} new matches`,
+              body: `Latest: ${latestKeyword}`
+            },
+            sound: 'default',
+            'thread-id': 'alerts',
+            badge: unreadCount
+          },
+          matchId: summaryMatchId,
+          link: latestLink
         }
       }
     });
     return true;
   } catch (error) {
     if (error.code === 'messaging/invalid-registration-token' ||
-        error.code === 'messaging/registration-token-not-registered') {
-      console.warn(`⚠️ Invalid/expired FCM token ${token?.slice(0, 8)}…`);
+        error.code === 'messaging/registration-token-not-registered' ||
+        error.message?.includes('Auth error from APNS')) {
+      console.warn(`⚠️ Invalid/expired FCM token for user ${userId}`);
+      await db.collection('user_settings').doc(userId).update({ fcmToken: admin.firestore.FieldValue.delete() });
       return null;
     }
-    console.error(`⚠️ Failed to send push to token ${token?.slice(0, 8)}…: ${error.message}`);
+    console.error(`⚠️ Failed to send summary push to user ${userId}: ${error.message}`);
     return false;
   }
 }
@@ -284,22 +348,32 @@ async function sendNotification(token, keyword, entry) {
 // --- Processing loops -----------------------------------------------------------
 
 async function processKeyword({ userId, keyword, keywordIndex, fcmToken }) {
-  if (!keyword?.enabled || !keyword.term) return 0;
+  if (!keyword?.enabled || !keyword.term) return { matches: 0, pendingNotifications: [] };
 
-  const lastCheckedAt = toDate(keyword.lastCheckedAt) ?? new Date(0);
+  const lastCheckedAt = toDate(keyword.lastCheckedAt);
+  const isFirstRun = !lastCheckedAt;
+  
+  if (isFirstRun) {
+    await updateKeywordCheckpoint(userId, keywordIndex, new Date());
+    return { matches: 0, pendingNotifications: [] };
+  }
+  
   const entries = await searchTypesense(keyword, lastCheckedAt);
   if (!entries.length) {
-    return 0;
+    return { matches: 0, pendingNotifications: [] };
   }
 
+  const pendingNotifications = [];
   let createdMatches = 0;
+  
   for (const entry of entries) {
     try {
+      const matchId = `${keyword.id}_${entry.objectID}`;
       const { created } = await upsertMatch(userId, keyword, entry);
       if (created) {
         createdMatches += 1;
-        if (keyword.notifyPush) {
-          await sendNotification(fcmToken, keyword, entry);
+        if (fcmToken && keyword.notifyPush && !sentMatchIds.has(matchId)) {
+          pendingNotifications.push({ keyword, entry, matchId });
         }
       }
     } catch (error) {
@@ -310,13 +384,18 @@ async function processKeyword({ userId, keyword, keywordIndex, fcmToken }) {
   if (createdMatches > 0) {
     await updateKeywordCheckpoint(userId, keywordIndex, new Date());
   }
-  return createdMatches;
+  
+  return { matches: createdMatches, pendingNotifications };
 }
 
 async function processUser(doc) {
   const userId = doc.id;
   const data = doc.data() ?? {};
+  
   if (data.monitorAlertsEnabled === false) return 0;
+  if (!data.fcmToken) return 0;
+  
+  const fcmToken = data.fcmToken;
 
   const keywords = Array.isArray(data.keywords) ? data.keywords : [];
   if (!keywords.length) return 0;
@@ -325,19 +404,60 @@ async function processUser(doc) {
     userId,
     keyword,
     keywordIndex: index,
-    fcmToken: data.fcmToken
+    fcmToken
   }));
 
   const keywordResults = await pMap(keywordContexts, (ctx) => processKeyword(ctx), {
     concurrency: KEYWORD_WORKERS
   });
 
-  const totalMatches = keywordResults.reduce((sum, val) => sum + (val || 0), 0);
+  const totalMatches = keywordResults.reduce((sum, val) => sum + (val?.matches || 0), 0);
+  const allPendingNotifications = keywordResults.flatMap(r => r?.pendingNotifications || []);
+
   if (totalMatches > 0) {
     await recordMonitorUsage(userId, totalMatches);
   }
 
+  if (allPendingNotifications.length > 0) {
+    await sendNotificationsWithBurstControl(userId, fcmToken, allPendingNotifications);
+  }
+
   return totalMatches;
+}
+
+async function sendNotificationsWithBurstControl(userId, fcmToken, pendingNotifications) {
+  const now = Date.now();
+  const timestamps = userPushTimestamps.get(userId) || [];
+  const recentTimestamps = timestamps.filter(t => now - t < RATE_LIMIT_WINDOW_MS);
+  
+  if (pendingNotifications.length >= BURST_THRESHOLD) {
+    const latestKeyword = pendingNotifications[0].keyword.term;
+    const latestLink = pendingNotifications[0].entry.link ?? '';
+    await sendSummaryNotification(userId, fcmToken, pendingNotifications.length, latestKeyword, latestLink);
+    pendingNotifications.forEach(n => sentMatchIds.add(n.matchId));
+    return;
+  }
+
+  let sent = 0;
+  for (const { keyword, entry, matchId } of pendingNotifications) {
+    if (recentTimestamps.length + sent >= RATE_LIMIT_MAX_PUSHES) {
+      const remaining = pendingNotifications.length - sent;
+      if (remaining > 0) {
+        const latestLink = entry.link ?? '';
+        await sendSummaryNotification(userId, fcmToken, remaining, keyword.term, latestLink);
+        pendingNotifications.slice(sent).forEach(n => sentMatchIds.add(n.matchId));
+      }
+      break;
+    }
+
+    const success = await sendNotification(userId, fcmToken, keyword, entry, matchId);
+    if (success) {
+      recentTimestamps.push(now);
+      sent += 1;
+    }
+  }
+
+  userPushTimestamps.set(userId, recentTimestamps);
 }
 
 // --- Entrypoint -----------------------------------------------------------------

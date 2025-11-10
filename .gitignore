@@ -4,6 +4,9 @@ config/.env
 config/.env.local
 *.key
 *.pem
+*.p8
+*firebase*.json
+push-notis/.env
 push-notis/node_modules/
 
 # Python

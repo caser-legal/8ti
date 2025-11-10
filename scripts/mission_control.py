@@ -28,6 +28,7 @@ ADMIN = os.getenv("TYPESENSE_ADMIN_KEY") or os.getenv("TS_ADMIN_KEY")
 SCAN_STATE_PATH = ROOT / "logs" / "scan_state.json"
 SCAN_HISTORY_PATH = ROOT / "logs" / "scan-history.ndjson"
 LOG_FILE_PATH = ROOT / "logs" / "feed-scan.log"
+MONITOR_LOG_PATH = Path("/var/log/caser-monitor.log")
 USCOURTS_FEEDS = ROOT / "config" / "uscourts-filtered-feed.json"
 GOVINFO_FEEDS = ROOT / "config" / "govinfo-filtered-feed.json"
 
@@ -152,6 +153,38 @@ def docker_running() -> bool:
         return False
 
 
+def get_monitor_status() -> Dict[str, Any]:
+    """Get push notification monitor status from systemd."""
+    status = {"running": False, "next_run": None, "last_run": None}
+    try:
+        # Check if timer is active
+        result = subprocess.run(
+            ["systemctl", "is-active", "caser-monitor.timer"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        status["running"] = result.stdout.strip() == "active"
+        
+        # Get timer details
+        result = subprocess.run(
+            ["systemctl", "list-timers", "caser-monitor.timer", "--no-pager"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            lines = result.stdout.strip().split("\n")
+            if len(lines) > 1:
+                parts = lines[1].split()
+                if len(parts) >= 4:
+                    status["next_run"] = f"{parts[0]} {parts[1]}"
+                    status["last_run"] = f"{parts[3]} {parts[4]}"
+    except Exception:
+        pass
+    return status
+
+
 def data_directory_size() -> int:
     data_root = ROOT / "data"
     if not data_root.exists():
@@ -229,6 +262,7 @@ def collect_snapshot() -> Dict[str, Any]:
     feeds_govinfo = count_feeds(GOVINFO_FEEDS)
     data_size = data_directory_size()
     docs_today = docs_added_today_total()
+    monitor_status = get_monitor_status()
 
     return {
         "now": datetime.now().astimezone(),
@@ -239,6 +273,7 @@ def collect_snapshot() -> Dict[str, Any]:
         "history": primary,
         "data_size": data_size,
         "docs_today": docs_today,
+        "monitor": monitor_status,
     }
 
 
@@ -289,6 +324,16 @@ def render(snapshot: Dict[str, Any]) -> None:
     lines.append(f"{BOLD}Services{RESET}")
     lines.append(f"  Typesense   {ts_status:<8} docs: {ts_docs:<15} ({ts_message})")
     lines.append(f"  Docker      {docker_status}")
+    
+    # Push notification monitor status
+    monitor = snapshot["monitor"]
+    monitor_status = colour("ACTIVE", GREEN) if monitor["running"] else colour("INACTIVE", RED)
+    lines.append(f"  Monitor     {monitor_status}")
+    if monitor["next_run"]:
+        lines.append(f"    Next run  {monitor['next_run']}")
+    if monitor["last_run"]:
+        lines.append(f"    Last run  {monitor['last_run']}")
+    
     lines.append("")
     lines.append(f"{BOLD}Feeds Monitored{RESET}")
     lines.append(f"  uscourts    {feeds['uscourts']}")
@@ -311,6 +356,18 @@ def render(snapshot: Dict[str, Any]) -> None:
     lines.append(f"  Documents   {ts_docs}")
     lines.append(f"  Data Size   {data_size}")
     lines.append("")
+    
+    # Monitor log tail
+    monitor_tail_count = 10
+    lines.append(f"{BOLD}Monitor Log{RESET} (last {monitor_tail_count} lines)")
+    monitor_tail = tail_lines(MONITOR_LOG_PATH, monitor_tail_count)
+    if monitor_tail:
+        for line in monitor_tail:
+            lines.append(f"  {line.rstrip()}")
+    else:
+        lines.append("  (no monitor log yet)")
+    lines.append("")
+    
     log_tail_count = 30
     lines.append(f"{BOLD}Log Tail{RESET} (last {log_tail_count} lines)")
     log_tail = tail_lines(LOG_FILE_PATH, log_tail_count)
