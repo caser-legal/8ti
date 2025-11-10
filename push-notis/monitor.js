@@ -69,7 +69,16 @@ const MAX_PAGES = Number(TYPESENSE_MAX_PAGES) || 3;
 
 // --- Helpers --------------------------------------------------------------------
 
-const nowIso = () => new Date().toISOString();
+const nowIso = () => {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const year = now.getFullYear();
+  return `${hours}:${minutes}:${seconds} PST - ${month}-${day}-${year}`;
+};
 
 const toDate = (value) => {
   if (!value) return null;
@@ -463,17 +472,20 @@ async function sendNotificationsWithBurstControl(userId, fcmToken, pendingNotifi
 // --- Entrypoint -----------------------------------------------------------------
 
 async function main() {
-  console.log(`\n[${nowIso()}] 🔍 Starting CASER monitor run…`);
+  const startTime = Date.now();
+  console.log(`🔍 Starting monitor | ${nowIso()}`);
   const snapshot = await db.collection('user_settings').get();
   const userDocs = snapshot.docs;
-  console.log(`Found ${userDocs.length} user profiles to evaluate.`);
+  console.log(`👤 ${userDocs.length} user profiles`);
 
   const results = await pMap(userDocs, (doc) => processUser(doc), {
     concurrency: USER_WORKERS
   });
 
   const newMatches = results.reduce((sum, val) => sum + (val || 0), 0);
-  console.log(`[${nowIso()}] ✅ Monitor run complete. New matches recorded: ${newMatches}`);
+  const duration = Math.round((Date.now() - startTime) / 1000);
+  const durationStr = duration < 60 ? `${duration}s` : `${Math.floor(duration / 60)}m ${duration % 60}s`;
+  console.log(`✅ Complete | ${newMatches} new matches | ${durationStr}`);
 }
 
 main()

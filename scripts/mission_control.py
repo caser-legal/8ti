@@ -154,21 +154,23 @@ def docker_running() -> bool:
 
 
 def get_monitor_status() -> Dict[str, Any]:
-    """Get push notification monitor status from systemd."""
-    status = {"running": False, "next_run": None, "last_run": None}
+    """Get push notification monitor status - runs after scanner completes."""
+    status = {"running": True, "next_run": None, "last_run": None}
     try:
-        # Check if timer is active
-        result = subprocess.run(
-            ["systemctl", "is-active", "caser-monitor.timer"],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-        status["running"] = result.stdout.strip() == "active"
+        # Check monitor log for last run
+        if MONITOR_LOG_PATH.exists():
+            lines = tail_lines(MONITOR_LOG_PATH, 5)
+            for line in reversed(lines):
+                if "Starting monitor" in line:
+                    # Parse time from log line
+                    parts = line.split("|")
+                    if len(parts) >= 2:
+                        status["last_run"] = parts[1].strip()
+                    break
         
-        # Get timer details
+        # Monitor runs after scanner, so show scanner's next run
         result = subprocess.run(
-            ["systemctl", "list-timers", "caser-monitor.timer", "--no-pager"],
+            ["systemctl", "--user", "list-timers", "caser-scan@1.timer"],
             capture_output=True,
             text=True,
             timeout=5
@@ -178,8 +180,12 @@ def get_monitor_status() -> Dict[str, Any]:
             if len(lines) > 1:
                 parts = lines[1].split()
                 if len(parts) >= 4:
-                    status["next_run"] = f"{parts[0]} {parts[1]}"
-                    status["last_run"] = f"{parts[3]} {parts[4]}"
+                    next_str = " ".join(parts[0:4])
+                    try:
+                        dt = datetime.strptime(next_str, "%a %Y-%m-%d %H:%M:%S %Z")
+                        status["next_run"] = dt.strftime("%H:%M:%S %Z - %m-%d-%Y")
+                    except ValueError:
+                        pass
     except Exception:
         pass
     return status
@@ -239,7 +245,7 @@ def parse_iso_to_pacific(value: Optional[str]) -> Optional[datetime]:
 def format_pacific(dt: Optional[datetime]) -> str:
     if not dt:
         return "—"
-    return dt.strftime("%Y-%m-%d %I:%M %p PT")
+    return dt.strftime("%H:%M:%S %Z - %m-%d-%Y")
 
 
 def format_run_id(run_id: Optional[str]) -> Optional[str]:
@@ -283,11 +289,11 @@ def render(snapshot: Dict[str, Any]) -> None:
     history = snapshot["history"]
     state = snapshot["scan_state"]
 
-    ts_status = colour("OK", GREEN) if typesense["ok"] else colour("DOWN", RED)
+    ts_status = colour("ONLINE", GREEN) if typesense["ok"] else colour("DOWN", RED)
     ts_docs = f"{typesense['docs']:,}" if isinstance(typesense.get("docs"), int) else "—"
     ts_message = typesense.get("message", "")
 
-    docker_status = colour("OK", GREEN) if snapshot["docker_ok"] else colour("DOWN", RED)
+    docker_status = colour("ONLINE", GREEN) if snapshot["docker_ok"] else colour("DOWN", RED)
 
     last_run_id = history.get("run") or state.get("last_scan_start", "") or "n/a"
     last_status = history.get("status") or state.get("last_scan_status", "unknown")
@@ -322,43 +328,38 @@ def render(snapshot: Dict[str, Any]) -> None:
     lines.append(f"{BOLD}CASER Mission Control{RESET} — {now}")
     lines.append("=" * 80)
     lines.append(f"{BOLD}Services{RESET}")
-    lines.append(f"  Typesense   {ts_status:<8} docs: {ts_docs:<15} ({ts_message})")
-    lines.append(f"  Docker      {docker_status}")
+    lines.append(f"  Typesense      {ts_status}")
+    lines.append(f"  Docker         {docker_status}")
     
     # Push notification monitor status
     monitor = snapshot["monitor"]
-    monitor_status = colour("ACTIVE", GREEN) if monitor["running"] else colour("INACTIVE", RED)
-    lines.append(f"  Monitor     {monitor_status}")
+    monitor_status = colour("ONLINE", GREEN) if monitor["running"] else colour("OFFLINE", RED)
+    lines.append(f"  Notifications  {monitor_status}")
     if monitor["next_run"]:
-        lines.append(f"    Next run  {monitor['next_run']}")
+        lines.append(f"    Next run     {monitor['next_run']}")
     if monitor["last_run"]:
-        lines.append(f"    Last run  {monitor['last_run']}")
+        lines.append(f"    Last run     {monitor['last_run']}")
     
     lines.append("")
-    lines.append(f"{BOLD}Feeds Monitored{RESET}")
-    lines.append(f"  uscourts    {feeds['uscourts']}")
-    lines.append(f"  govinfo     {feeds['govinfo']}")
-    lines.append("")
-    run_label = f"{last_run_id}"
-    if run_human:
-        run_label = f"{last_run_id} / {run_human}"
-    lines.append(f"{BOLD}Latest Run{RESET} ({run_label})")
+    lines.append(f"{BOLD}Latest Run{RESET}")
     status_line = f"  Status      {status_label}"
-    if duration:
-        status_line += f"  duration: {duration}"
     lines.append(status_line)
+    if duration:
+        lines.append(f"  Duration    {duration}")
     if started_at:
         lines.append(f"  Started     {format_pacific(started_dt)}")
     if ended_at:
         lines.append(f"  Ended       {format_pacific(ended_dt)}")
     lines.append("")
     lines.append(f"{BOLD}Index Overview{RESET}")
+    lines.append(f"  uscourts    {feeds['uscourts']}")
+    lines.append(f"  govinfo     {feeds['govinfo']}")
     lines.append(f"  Documents   {ts_docs}")
     lines.append(f"  Data Size   {data_size}")
     lines.append("")
     
     # Monitor log tail
-    monitor_tail_count = 10
+    monitor_tail_count = 3
     lines.append(f"{BOLD}Monitor Log{RESET} (last {monitor_tail_count} lines)")
     monitor_tail = tail_lines(MONITOR_LOG_PATH, monitor_tail_count)
     if monitor_tail:

@@ -93,7 +93,7 @@ def configure_logging() -> None:
     handler = logging.StreamHandler()
     use_color = getattr(handler.stream, "isatty", lambda: False)()
     formatter = ColorFormatter(
-        "%(asctime)s %(levelname)-8s [run_at=%(run_at)s] %(message)s",
+        "%(levelname)-8s %(message)s",
         "%Y-%m-%d %H:%M:%S",
         use_color=use_color,
     )
@@ -818,8 +818,7 @@ def run_once(
 
                 duplicates_total += duplicates_in_feed
                 logger.info(
-                    "✓ entries=%d new=%d duplicate=%d total_new_this_run=%d",
-                    len(entries),
+                    "✅ +%d new | %d dup | 📊 %d total",
                     new_docs_in_feed,
                     duplicates_in_feed,
                     docs_created,
