@@ -18,13 +18,14 @@ const {
   USER_CONCURRENCY = '4',
   KEYWORD_CONCURRENCY = '4',
   TYPESENSE_PER_PAGE = '100',
-  TYPESENSE_MAX_PAGES = '3'
+  TYPESENSE_MAX_PAGES = '3',
+  SEARCH_TIMEOUT_SECONDS = '5'
 } = process.env;
 
 // --- Push notification constants ------------------------------------------------
 const BURST_THRESHOLD = 10;
 const RATE_LIMIT_WINDOW_MS = 30000;
-const RATE_LIMIT_MAX_PUSHES = 5;
+const RATE_LIMIT_MAX_PUSHES = 4;
 const sentMatchIds = new Set();
 const userPushTimestamps = new Map();
 
@@ -57,7 +58,8 @@ const typesenseClient = new Typesense.Client({
       protocol: TYPESENSE_PROTOCOL
     }
   ],
-  apiKey: TYPESENSE_API_KEY
+  apiKey: TYPESENSE_API_KEY,
+  connectionTimeoutSeconds: Number(SEARCH_TIMEOUT_SECONDS) || 5
 });
 
 const USER_WORKERS = Number(USER_CONCURRENCY) || 4;
@@ -67,16 +69,7 @@ const MAX_PAGES = Number(TYPESENSE_MAX_PAGES) || 3;
 
 // --- Helpers --------------------------------------------------------------------
 
-const nowIso = () => {
-  const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const year = now.getFullYear();
-  return `${hours}:${minutes}:${seconds} PST - ${month}-${day}-${year}`;
-};
+const nowIso = () => new Date().toISOString();
 
 const toDate = (value) => {
   if (!value) return null;
@@ -288,8 +281,10 @@ async function sendNotification(userId, token, keyword, entry, matchId) {
             'thread-id': 'alerts',
             badge: unreadCount
           },
-          matchId,
-          link: entry.link ?? ''
+          'custom-data': {
+            matchId,
+            link: entry.link ?? ''
+          }
         }
       }
     });
@@ -297,8 +292,7 @@ async function sendNotification(userId, token, keyword, entry, matchId) {
     return true;
   } catch (error) {
     if (error.code === 'messaging/invalid-registration-token' ||
-        error.code === 'messaging/registration-token-not-registered' ||
-        error.message?.includes('Auth error from APNS')) {
+        error.code === 'messaging/registration-token-not-registered') {
       console.warn(`⚠️ Invalid/expired FCM token for user ${userId}`);
       await db.collection('user_settings').doc(userId).update({ fcmToken: admin.firestore.FieldValue.delete() });
       return null;
@@ -308,11 +302,10 @@ async function sendNotification(userId, token, keyword, entry, matchId) {
   }
 }
 
-async function sendSummaryNotification(userId, token, matchCount, latestKeyword, latestLink = '') {
+async function sendSummaryNotification(userId, token, matchCount, latestKeyword) {
   if (!token) return false;
   
   const unreadCount = await getUnreadCount(userId);
-  const summaryMatchId = `summary-${Date.now()}`;
   
   try {
     await messaging.send({
@@ -332,17 +325,14 @@ async function sendSummaryNotification(userId, token, matchCount, latestKeyword,
             sound: 'default',
             'thread-id': 'alerts',
             badge: unreadCount
-          },
-          matchId: summaryMatchId,
-          link: latestLink
+          }
         }
       }
     });
     return true;
   } catch (error) {
     if (error.code === 'messaging/invalid-registration-token' ||
-        error.code === 'messaging/registration-token-not-registered' ||
-        error.message?.includes('Auth error from APNS')) {
+        error.code === 'messaging/registration-token-not-registered') {
       console.warn(`⚠️ Invalid/expired FCM token for user ${userId}`);
       await db.collection('user_settings').doc(userId).update({ fcmToken: admin.firestore.FieldValue.delete() });
       return null;
@@ -357,14 +347,7 @@ async function sendSummaryNotification(userId, token, matchCount, latestKeyword,
 async function processKeyword({ userId, keyword, keywordIndex, fcmToken }) {
   if (!keyword?.enabled || !keyword.term) return { matches: 0, pendingNotifications: [] };
 
-  const lastCheckedAt = toDate(keyword.lastCheckedAt);
-  const isFirstRun = !lastCheckedAt;
-  
-  if (isFirstRun) {
-    await updateKeywordCheckpoint(userId, keywordIndex, new Date());
-    return { matches: 0, pendingNotifications: [] };
-  }
-  
+  const lastCheckedAt = toDate(keyword.lastCheckedAt) ?? new Date(0);
   const entries = await searchTypesense(keyword, lastCheckedAt);
   if (!entries.length) {
     return { matches: 0, pendingNotifications: [] };
@@ -379,7 +362,7 @@ async function processKeyword({ userId, keyword, keywordIndex, fcmToken }) {
       const { created } = await upsertMatch(userId, keyword, entry);
       if (created) {
         createdMatches += 1;
-        if (fcmToken && keyword.notifyPush && !sentMatchIds.has(matchId)) {
+        if (fcmToken && !sentMatchIds.has(matchId)) {
           pendingNotifications.push({ keyword, entry, matchId });
         }
       }
@@ -398,11 +381,9 @@ async function processKeyword({ userId, keyword, keywordIndex, fcmToken }) {
 async function processUser(doc) {
   const userId = doc.id;
   const data = doc.data() ?? {};
-  
-  if (data.monitorAlertsEnabled === false) return 0;
-  if (!data.fcmToken) return 0;
-  
   const fcmToken = data.fcmToken;
+  
+  if (!fcmToken) return 0;
 
   const keywords = Array.isArray(data.keywords) ? data.keywords : [];
   if (!keywords.length) return 0;
@@ -439,8 +420,7 @@ async function sendNotificationsWithBurstControl(userId, fcmToken, pendingNotifi
   
   if (pendingNotifications.length >= BURST_THRESHOLD) {
     const latestKeyword = pendingNotifications[0].keyword.term;
-    const latestLink = pendingNotifications[0].entry.link ?? '';
-    await sendSummaryNotification(userId, fcmToken, pendingNotifications.length, latestKeyword, latestLink);
+    await sendSummaryNotification(userId, fcmToken, pendingNotifications.length, latestKeyword);
     pendingNotifications.forEach(n => sentMatchIds.add(n.matchId));
     return;
   }
@@ -450,8 +430,7 @@ async function sendNotificationsWithBurstControl(userId, fcmToken, pendingNotifi
     if (recentTimestamps.length + sent >= RATE_LIMIT_MAX_PUSHES) {
       const remaining = pendingNotifications.length - sent;
       if (remaining > 0) {
-        const latestLink = entry.link ?? '';
-        await sendSummaryNotification(userId, fcmToken, remaining, keyword.term, latestLink);
+        await sendSummaryNotification(userId, fcmToken, remaining, keyword.term);
         pendingNotifications.slice(sent).forEach(n => sentMatchIds.add(n.matchId));
       }
       break;
@@ -470,20 +449,17 @@ async function sendNotificationsWithBurstControl(userId, fcmToken, pendingNotifi
 // --- Entrypoint -----------------------------------------------------------------
 
 async function main() {
-  const startTime = Date.now();
-  console.log(`🔍 Starting monitor | ${nowIso()}`);
+  console.log(`\n[${nowIso()}] 🔍 Starting CASER monitor run…`);
   const snapshot = await db.collection('user_settings').get();
   const userDocs = snapshot.docs;
-  console.log(`👤 ${userDocs.length} user profiles`);
+  console.log(`Found ${userDocs.length} user profiles to evaluate.`);
 
   const results = await pMap(userDocs, (doc) => processUser(doc), {
     concurrency: USER_WORKERS
   });
 
   const newMatches = results.reduce((sum, val) => sum + (val || 0), 0);
-  const duration = Math.round((Date.now() - startTime) / 1000);
-  const durationStr = duration < 60 ? `${duration}s` : `${Math.floor(duration / 60)}m ${duration % 60}s`;
-  console.log(`✅ Complete | ${newMatches} new matches | ${durationStr}`);
+  console.log(`[${nowIso()}] ✅ Monitor run complete. New matches recorded: ${newMatches}`);
 }
 
 main()

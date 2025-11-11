@@ -10,6 +10,7 @@ cd ~/caser-search && source .venv/bin/activate && python scripts/mission_control
 
 > NOTE: The scanner runs as two shards. Commands below reference
 > `caser-scan@0` / `caser-scan@1` units—swap in the shard index you need.
+-Test notification system: cd /home/sm/caser-search/push-notis && node test-push.js (sends to everyone)
 
 ### 📺 Live Scanner Output
 
@@ -22,11 +23,10 @@ cd ~/caser-search && source .venv/bin/activate && python scripts/mission_control
 
 ### 📊 Live Document Count
 
-watch -n 5 '
-  source /home/sm/caser-search/config/.env.local 2>/dev/null
-  curl -s -H "X-TYPESENSE-API-KEY: ${TYPESENSE_ADMIN_KEY:-$TS_ADMIN_KEY}" \
-  http://localhost:8108/collections/rss_entries | jq ".num_documents"
-'
+source /home/sm/caser-search/config/.env.local && curl -s -H "X-TYPESENSE-API-KEY: ${TYPESENSE_ADMIN_KEY:-$TS_ADMIN_KEY}" http://localhost:8108/collections/rss_entries | jq ".num_documents"
+
+watch -n 5 'bash -c "source /home/sm/caser-search/config/.env.local 2>/dev/null && curl -s -H \"X-TYPESENSE-API-KEY: \${TYPESENSE_ADMIN_KEY:-\$TS_ADMIN_KEY}\" http://localhost:8108/collections/rss_entries | jq \".num_documents\""'
+
 
 - Updates every 5 seconds
 - Ctrl+C to exit
