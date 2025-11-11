@@ -28,14 +28,16 @@
 
 A **self-hosted legal document search engine** that automatically monitors **322 federal court RSS feeds** (171 uscourts + 151 govinfo) and makes filings instantly searchable via HTTPS API.
 
-### Current Stats
-- **Documents Indexed:** 48,000+ (weekend baseline)
-- **RSS Feeds:** 326 active (174 uscourts + 152 govinfo)
+### Current Stats (Updated 2025-11-11)
+- **Documents Indexed:** 1,214,078+ (production baseline)
+- **RSS Feeds:** 322 active (171 uscourts + 151 govinfo)
 - **Update Interval:** Every 10 minutes (2 parallel systemd shards)
-- **Database Size:** 200MB (Typesense data dir)
+- **Database Size:** 1.2GB (Typesense data dir)
 - **Scan Speed:** ~20-30 minutes per full scan
 - **Monthly Cost:** ~$6 (electricity + domain)
 - **Backup Schedule:** Daily at 3 AM (7-day retention)
+- **System:** WSL2 Ubuntu 24.04 on Windows 10/11
+- **Runtime:** Docker containers with systemd timers
 
 ### What It Does
 ✅ Monitors 326 active court RSS feeds automatically  
@@ -82,23 +84,21 @@ cd caser-search
 
 **4. Configure Environment**
 ```bash
-cp config/.env.example config/.env.local
-nano config/.env.local
+cp config/.env.example .env
+nano .env
 ```
 Set:
-- `TYPESENSE_ADMIN_KEY` - Typesense admin key used by all scanner scripts
-- `TS_ADMIN_KEY` - Same value as above so the Typesense container starts up
-- `CLOUDFLARE_API_TOKEN` - API token for the Cloudflare DNS plugin (Caddy)
-- `PROXY_MODE` - `proxy-first` (default), `proxy-only`, or `direct-only`
-- Optional: `TYPESENSE_HOST` and `COLLECTION` if you are not using the defaults
+- `TYPESENSE_ADMIN_KEY` - Typesense admin key (e.g., 'your-secure-admin-key-here')
+- `TS_ADMIN_KEY` - Same value as above for container startup
+- `CLOUDFLARE_API_TOKEN` - API token for Cloudflare DNS plugin
+- `TYPESENSE_HOST` - http://localhost:8108 (default)
+- `COLLECTION` - rss_entries (default)
+- `PROXY_MODE` - proxy-first (default), proxy-only, or direct-only
+- `ALERT_WEBHOOK_URL` - Slack webhook for system alerts
+- `CASE_MONITOR_WEBHOOK_URL` - Slack webhook for case monitoring
+- `MONITORED_CASE` - Case name to monitor (optional)
 
-Docker Compose does not automatically read files from `config/`, so either pass `--env-file config/.env.local` to every `docker compose` command or export the variables in your shell before running compose (example below):
-
-```bash
-set -a
-source config/.env.local
-set +a
-```
+Docker Compose reads from `.env` in project root automatically.
 
 **5. Setup Python**
 ```bash
@@ -114,9 +114,9 @@ deactivate
 
 **6. Start Services**
 ```bash
-docker compose --env-file config/.env.local up -d
+docker compose up -d
 sleep 10
-docker compose --env-file config/.env.local ps  # Should show 2 containers running
+docker compose ps  # Should show 2 containers running
 ```
 > **Security Note:** Typesense port 8108 is NOT exposed publicly. Access is only
 > available via internal Docker network or through Caddy reverse proxy at
@@ -127,11 +127,9 @@ docker compose --env-file config/.env.local ps  # Should show 2 containers runni
 # Enable user linger (auto-start on boot)
 sudo loginctl enable-linger $USER
 
-# Scanner services (templated at ~/.config/systemd/user/caser-scan@.service)
-> When referencing the scanner units below, substitute `caser-scan@0` or
-> `caser-scan@1` depending on the shard you are inspecting.
-# Monitor service (already created at ~/.config/systemd/user/caser-monitor.service)
-# Backup service (already created at ~/.config/systemd/user/caser-backup.service)
+# Scanner services are templated at ~/.config/systemd/user/caser-scan@.service
+# Monitor service at ~/.config/systemd/user/caser-monitor.service
+# Backup service at ~/.config/systemd/user/caser-backup.service
 
 # Enable and start all timers
 systemctl --user daemon-reload
@@ -143,37 +141,20 @@ systemctl --user enable --now caser-backup.timer
 systemctl --user list-timers | grep caser
 ```
 
-**Timers:**
+**Active Timers:**
 - `caser-scan@0.timer` / `caser-scan@1.timer`: Run shard pair every 10 minutes
-- `caser-monitor.timer`: Runs Firebase monitor every 5 minutes
+- `caser-monitor.timer`: Runs Firebase monitor every 5 minutes  
 - `caser-backup.timer`: Creates Typesense snapshots daily at 3 AM
 
-[Install]
-WantedBy=default.target
-EOF
+**Current Status:**
+```bash
+# Check running containers
+docker ps
+# CONTAINER ID   IMAGE                      STATUS         PORTS
+# e216da4a444e   caser-search-caddy         Up 3 minutes   0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp
+# 38ffeefd1fb9   typesense/typesense:29.0   Up 3 minutes   127.0.0.1:8108->8108/tcp
 
-# Create timer file
-> NOTE: The live system runs two shards via `caser-scan@.service` with timers
-> `caser-scan@0.timer` and `caser-scan@1.timer`. Duplicate the timer snippet per
-> shard (substitute the `@N` suffix) if you need to recreate them manually.
-
-cat > ~/.config/systemd/user/caser-scan.timer <<'EOF'
-[Unit]
-Description=CASER Scanner Timer (every 10 minutes)
-
-[Timer]
-OnBootSec=2min
-OnUnitActiveSec=10min
-Persistent=true
-
-[Install]
-WantedBy=timers.target
-EOF
-
-# Enable and start
-systemctl --user daemon-reload
-systemctl --user enable caser-scan.timer
-systemctl --user start caser-scan.timer
+# Check systemd services
 systemctl --user status caser-scan@0.timer caser-scan@1.timer
 ```
 
@@ -192,13 +173,19 @@ netsh advfirewall firewall add rule name="caser-443" dir=in action=allow protoco
 
 ```
 Internet → Cloudflare (DNS/SSL/DDoS) → Your Router (port forward)
-  → Windows PC → WSL2 → Docker
-    ├── Caddy (reverse proxy, SSL)
-    └── Typesense (search engine, 1.2M docs)
+  → Windows PC (172.xxx.xxx.xx) → WSL2 Ubuntu 24.04 → Docker
+    ├── Caddy (reverse proxy, SSL) - ports 80/443
+    └── Typesense (search engine, 1.2M docs) - port 8108 (localhost only)
 
 Python Scanner (systemd timer, every 10 min)
   → Cloudflare Worker Proxy → Court RSS feeds
     → Parse entries → Check duplicates → Index new docs
+
+Network Configuration:
+- WSL2 IP: 172.xxx.xxx.xx (dynamic, changes on Windows restart)
+- Port forwarding: Windows host → WSL2 instance
+- Typesense: localhost:8108 (not exposed externally)
+- Caddy: 0.0.0.0:80/443 (public via port forwarding)
 ```
 
 ---
@@ -259,10 +246,10 @@ bash ./scripts/status-check.sh
 # Or run individual checks:
 docker compose ps
 curl -s http://localhost:8108/health
-ADMIN_KEY=$(grep TYPESENSE_ADMIN_KEY config/.env.local | cut -d'=' -f2)
+ADMIN_KEY=$(grep TYPESENSE_ADMIN_KEY .env | cut -d'=' -f2 | tr -d "'\"")
 curl -s "http://localhost:8108/collections/rss_entries" \
   -H "X-TYPESENSE-API-KEY: $ADMIN_KEY" | jq '.num_documents'
-systemctl --user status caser-scan.timer
+systemctl --user status caser-scan@0.timer caser-scan@1.timer
 tail -20 logs/scan-history.ndjson | jq
 ```
 
@@ -362,26 +349,40 @@ caser-search/
 ├── src/
 │   ├── rss_scanner.py          # Main scanner (optimized)
 │   ├── govinfo_harvester.py    # Govinfo metadata fetcher
+│   ├── seen_ids_store.py       # Duplicate tracking with SQLite
 │   └── scan_tracker.py         # Scan state tracking
 ├── scripts/
 │   ├── run-scheduled-scan.sh   # Wrapper script
 │   ├── mission_control.py      # Live dashboard
 │   ├── rebuild_seen_cache.py   # Rebuild duplicate cache from Typesense
 │   ├── dedupe_typesense.py     # Drop/recreate index with unique docs
+│   ├── backup-typesense.sh     # Automated backup script
+│   ├── health-check.sh         # System health monitoring
 │   └── admin/                  # API key management
 ├── config/
 │   ├── uscourts-filtered-feed.json  # 171 uscourts feeds
 │   ├── govinfo-filtered-feed.json   # 151 govinfo feeds
 │   ├── .env.example            # Template for local secrets
-│   └── .env.local              # Secrets (not in git)
+│   └── .env.local              # Local secrets (not in git)
+├── push-notis/
+│   ├── monitor.js              # Firebase push notification monitor
+│   ├── caser-monitor.service   # Systemd service file
+│   ├── caser-monitor.timer     # Systemd timer file
+│   └── *.md                    # Documentation files
 ├── data/
 │   ├── db/                     # Typesense database (1.2GB)
-│   ├── seen_ids.txt            # Duplicate tracking (128k IDs)
+│   ├── seen_ids.txt            # Duplicate tracking (1.2M+ IDs)
+│   ├── seen_ids.sqlite3        # SQLite duplicate store (28MB)
 │   ├── meta/                   # Typesense metadata
-│   └── state/                  # Typesense state (744MB)
+│   └── state/                  # Typesense state files
 ├── logs/
-│   ├── feed-scan.log           # Detailed logs
-│   └── scan-history.ndjson     # Per-scan summaries
+│   ├── feed-scan.log           # Detailed logs (93MB)
+│   ├── scan-history.ndjson     # Per-scan summaries (15MB)
+│   ├── scan_state.json         # Current scan state
+│   └── active/                 # Active scan logs
+├── backups/                    # Daily Typesense snapshots
+├── caddy-data/                 # Caddy SSL certificates and data
+├── .env                        # Environment variables (not in git)
 ├── docker-compose.yml          # Container orchestration
 ├── Dockerfile.caddy            # Custom Caddy with Cloudflare DNS
 ├── Caddyfile                   # Reverse proxy config
@@ -487,11 +488,11 @@ cd ~/caser-search
 bash scripts/backup-typesense.sh
 
 # List snapshots (inside the Typesense container)
-docker compose exec typesense ls /home/sm/caser-search/backups
+docker compose exec typesense ls /data/snapshots
 ```
 
 The backup script now:
-1. Loads `TYPESENSE_ADMIN_KEY` / `TS_ADMIN_KEY` from `config/.env.local`
+1. Loads `TYPESENSE_ADMIN_KEY` / `TS_ADMIN_KEY` from `.env`
 2. Triggers a Typesense snapshot at `backups/typesense_YYYYMMDD_HHMMSS`
 3. Copies `data/seen_ids.txt` to `backups/seen_ids_YYYYMMDD_HHMMSS.txt`
 4. Prunes items older than 7 days
@@ -585,7 +586,7 @@ The system sends real-time Slack notifications using Mission Control style forma
 
 **Setup:**
 1. Create Slack incoming webhooks at https://api.slack.com/apps
-2. Add to `config/.env.local`:
+2. Add to `.env`:
    ```bash
    ALERT_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
    CASE_MONITOR_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/CASE/WEBHOOK
@@ -626,6 +627,25 @@ The system sends real-time Slack notifications using Mission Control style forma
 
 ## Changelog
 
+### November 2025 - v2.1 (Current)
+
+**System Updates:**
+- ✅ WSL2 Ubuntu 24.04 environment
+- ✅ Docker containers: Caddy + Typesense 29.0
+- ✅ Systemd user services with timers
+- ✅ 1.2M+ documents indexed (production scale)
+- ✅ SQLite seen_ids store (28MB) + text backup
+- ✅ Daily automated backups with 7-day retention
+- ✅ Firebase push notification monitoring
+- ✅ Slack alerting with Mission Control formatting
+
+**Performance & Reliability:**
+- ✅ Dual shard scanning (caser-scan@0, caser-scan@1)
+- ✅ Exclusive file locking prevents race conditions
+- ✅ Atomic cache writes with temp files
+- ✅ Graceful error handling and retries
+- ✅ Security headers and rate limiting via Caddy
+
 ### November 2025 - v2.0
 
 **Major Optimizations:**
@@ -650,8 +670,9 @@ Proprietary - CASER Legal, LLC
 
 ---
 
-**Version:** 2.0  
-**Last Updated:** November 6, 2025  
+**Version:** 2.1  
+**Last Updated:** November 11, 2025  
 **Status:** ✅ Operational  
 **Documents:** 1,214,078+  
-**Feeds:** 322
+**Feeds:** 322  
+**System:** WSL2 Ubuntu 24.04 + Docker

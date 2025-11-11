@@ -3,15 +3,31 @@
 ## Overview
 Server-driven push notification system for legal document monitoring. All alerts originate from the server; no client-side polling or scheduling exists.
 
+**Current System Configuration:**
+- **Environment:** WSL2 Ubuntu 24.04 + Docker
+- **Typesense:** localhost:8108 (internal only)
+- **Execution:** Systemd timer every 5 minutes
+- **Service:** caser-monitor.service + caser-monitor.timer
+- **Logs:** systemd journal + /home/sm/caser-search/logs/
+
 ---
 
 ## Triggers
 
 **Execution Schedule:**
-- Run monitor job every 5-10 minutes (cron or event-driven)
+- Run monitor job every 5 minutes via systemd timer
 - Process per user only if:
   - `user_settings/{userId}.monitorAlertsEnabled == true`
   - `user_settings/{userId}.fcmToken` exists (non-empty string)
+
+**Current Implementation:**
+```bash
+# Check timer status
+systemctl --user status caser-monitor.timer
+
+# View recent runs
+journalctl --user -u caser-monitor.service -f
+```
 
 ---
 
@@ -123,6 +139,12 @@ Server-driven push notification system for legal document monitoring. All alerts
 
 ### Typesense Query
 
+**Current Configuration:**
+- **Host:** localhost:8108 (Docker internal network)
+- **Collection:** rss_entries
+- **Documents:** 1,214,078+ indexed
+- **Admin Key:** Loaded from /home/sm/caser-search/.env
+
 **Endpoint:** `/collections/rss_entries/documents/search`
 
 **Required Parameters:**
@@ -140,6 +162,14 @@ Server-driven push notification system for legal document monitoring. All alerts
 ```javascript
 // If keyword.selectedStates is non-empty:
 filter_by: "state:=[CA,NY,TX]"  // array join
+```
+
+**Connection Example:**
+```bash
+# Test Typesense connectivity
+ADMIN_KEY=$(grep TYPESENSE_ADMIN_KEY /home/sm/caser-search/.env | cut -d'=' -f2 | tr -d "'\"")
+curl -s "http://localhost:8108/collections/rss_entries" \
+  -H "X-TYPESENSE-API-KEY: $ADMIN_KEY" | jq '.num_documents'
 ```
 
 ### Result Filtering
@@ -556,35 +586,86 @@ New keywords with `lastCheckedAt == null` would match all historical entries, ca
 
 ### Environment Variables
 
+**Current Configuration (.env):**
 ```bash
-SERVICE_ACCOUNT_PATH=/path/to/firebase-service-account.json
+# Firebase
+SERVICE_ACCOUNT_PATH=/home/sm/secrets/firebase-service-account.json
+
+# Typesense
 TYPESENSE_HOST=localhost
-TYPESENSE_PORT=8108
+TYPESENSE_PORT=8108  
 TYPESENSE_PROTOCOL=http
-TYPESENSE_API_KEY=your-admin-key
+TYPESENSE_API_KEY=your-admin-key-here
+COLLECTION=rss_entries
+
+# Performance
 USER_CONCURRENCY=4
 KEYWORD_CONCURRENCY=4
 TYPESENSE_PER_PAGE=100
 TYPESENSE_MAX_PAGES=3
 ```
 
-### Cron Schedule
+### Systemd Configuration
 
+**Service File:** `~/.config/systemd/user/caser-monitor.service`
+```ini
+[Unit]
+Description=CASER Firebase Monitor
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/sm/caser-search/push-notis
+ExecStart=/usr/bin/node monitor.js
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=default.target
+```
+
+**Timer File:** `~/.config/systemd/user/caser-monitor.timer`
+```ini
+[Unit]
+Description=CASER Monitor Timer (every 5 minutes)
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+**Management Commands:**
 ```bash
-*/5 * * * * cd /home/sm/caser-search/push-notis && /usr/bin/node monitor.js >> /var/log/caser-monitor.log 2>&1
+# Enable and start
+systemctl --user daemon-reload
+systemctl --user enable --now caser-monitor.timer
+
+# Check status
+systemctl --user status caser-monitor.timer
+systemctl --user list-timers | grep caser-monitor
+
+# View logs
+journalctl --user -u caser-monitor.service -f
 ```
 
 ### Monitoring
 
 ```bash
 # Watch logs
-tail -f /var/log/caser-monitor.log
+journalctl --user -u caser-monitor.service -f
 
 # Check recent runs
-grep "Monitor run complete" /var/log/caser-monitor.log | tail -20
+journalctl --user -u caser-monitor.service --since "1 hour ago" | grep "Monitor run complete"
 
 # Check errors
-grep "❌" /var/log/caser-monitor.log | tail -50
+journalctl --user -u caser-monitor.service --since "1 day ago" | grep "❌"
+
+# Service health
+systemctl --user is-active caser-monitor.timer
+systemctl --user is-enabled caser-monitor.timer
 ```
 
 ---

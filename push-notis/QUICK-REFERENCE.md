@@ -1,11 +1,37 @@
 # Quick Reference Card
 
-## 🚀 Deployment
+## 🚀 Deployment (Current System)
 
 ```bash
+# WSL2 Ubuntu 24.04 + Docker + Systemd
 cd /home/sm/caser-search/push-notis
-node monitor.js  # Test run
-tail -f /var/log/caser-monitor.log  # Monitor
+
+# Test run
+node monitor.js
+
+# Check systemd status
+systemctl --user status caser-monitor.timer
+systemctl --user status caser-monitor.service
+
+# View logs
+journalctl --user -u caser-monitor.service -f
+
+# Environment
+cat /home/sm/caser-search/.env | grep -E "(TYPESENSE|FIREBASE)"
+```
+
+## 🏗️ System Architecture
+
+```
+WSL2 Ubuntu 24.04
+├── Docker Containers
+│   ├── Typesense (localhost:8108)
+│   └── Caddy (ports 80/443)
+├── Systemd User Services
+│   ├── caser-monitor.timer (every 5min)
+│   ├── caser-scan@0.timer (every 10min)
+│   └── caser-scan@1.timer (every 10min)
+└── Node.js Monitor (/home/sm/caser-search/push-notis/)
 ```
 
 ## 📋 Key Constants
