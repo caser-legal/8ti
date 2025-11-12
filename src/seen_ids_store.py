@@ -205,14 +205,17 @@ class SeenIdStore:
 
     def _atomic_write(self, lines: Sequence[str]) -> None:
         self.mirror_path.parent.mkdir(parents=True, exist_ok=True)
-        tmp_path = self.mirror_path.with_suffix(self.mirror_path.suffix + ".tmp")
-        with open(tmp_path, "w", encoding="utf-8") as fp:
-            fp.write("\n".join(lines))
-            if lines:
-                fp.write("\n")
-            fp.flush()
-            os.fsync(fp.fileno())
-        os.replace(tmp_path, self.mirror_path)
+        tmp_path = self.mirror_path.with_suffix(f".tmp.{os.getpid()}")
+        try:
+            with open(tmp_path, "w", encoding="utf-8") as fp:
+                fp.write("\n".join(lines))
+                if lines:
+                    fp.write("\n")
+                fp.flush()
+                os.fsync(fp.fileno())
+            os.replace(tmp_path, self.mirror_path)
+        finally:
+            tmp_path.unlink(missing_ok=True)
 
     def _is_empty(self) -> bool:
         row = self._conn.execute("SELECT COUNT(*) FROM seen_ids").fetchone()
