@@ -3,11 +3,11 @@
 # CASER Search - Self-Hosted Legal Document Search Engine
 
 [![Status](https://img.shields.io/badge/status-production-brightgreen)]()
-[![Documents](https://img.shields.io/badge/documents-1.2M+-blue)]()
-[![Feeds](https://img.shields.io/badge/feeds-322-orange)]()
+[![Documents](https://img.shields.io/badge/documents-197K+-blue)]()
+[![Feeds](https://img.shields.io/badge/feeds-354-orange)]()
 [![Updated](https://img.shields.io/badge/updated-2025--11--11-blue)]()
 
-**Production-grade legal search platform monitoring 322 federal court RSS feeds.**
+**Production-grade legal search platform monitoring 354 federal court RSS feeds.**
 
 🔗 **Live at:** [https://search.caserlegal.com](https://search.caserlegal.com)
 
@@ -28,22 +28,22 @@
 
 ## What This Is
 
-A **self-hosted legal document search engine** that automatically monitors **322 federal court RSS feeds** (171 uscourts + 151 govinfo) and makes filings instantly searchable via HTTPS API.
+A **self-hosted legal document search engine** that automatically monitors **354 federal court RSS feeds** (202 uscourts + 152 govinfo) and makes filings instantly searchable via HTTPS API.
 
 ### Current Stats (Updated 2025-11-11)
-- **Documents Indexed:** 1,214,078+ (production baseline)
-- **RSS Feeds:** 322 active (171 uscourts + 151 govinfo)
-- **Update Interval:** Every 10 minutes (2 parallel systemd shards)
-- **Database Size:** 1.2GB (Typesense data dir)
-- **Scan Speed:** ~20-30 minutes per full scan
+- **Documents Indexed:** 197,732
+- **RSS Feeds:** 354 active (202 uscourts + 152 govinfo)
+- **Update Interval:** Every 2 minutes (64 parallel systemd shards)
+- **Database Size:** 473 MB (Typesense data)
+- **Scan Speed:** ~8-10 seconds per shard
 - **Monthly Cost:** ~$6 (electricity + domain)
 - **Backup Schedule:** Daily at 3 AM (7-day retention)
 - **System:** WSL2 Ubuntu 24.04 on Windows 10/11
 - **Runtime:** Docker containers with systemd timers
 
 ### What It Does
-✅ Monitors 326 active court RSS feeds automatically  
-✅ Scans every 10 minutes via dual systemd shard timers  
+✅ Monitors 354 active court RSS feeds automatically  
+✅ Scans every 2 minutes via 64 systemd shard timers  
 ✅ Indexes documents with full-text search (Typesense)  
 ✅ Fast duplicate detection (skips already-seen entries)  
 ✅ Provides HTTPS API at `search.caserlegal.com`  
@@ -89,15 +89,15 @@ cd caser-search
 cp config/.env.example .env
 nano .env
 ```
-Set:
-- `TYPESENSE_ADMIN_KEY` - Typesense admin key (e.g., 'your-secure-admin-key-here')
-- `TS_ADMIN_KEY` - Same value as above for container startup
-- `CLOUDFLARE_API_TOKEN` - API token for Cloudflare DNS plugin
+Set required environment variables:
+- `TYPESENSE_ADMIN_KEY` - Typesense admin key (generate a secure random string)
+- `TS_ADMIN_KEY` - Same value as TYPESENSE_ADMIN_KEY
+- `CLOUDFLARE_API_TOKEN` - API token for Cloudflare DNS plugin (if using Cloudflare)
 - `TYPESENSE_HOST` - http://localhost:8108 (default)
 - `COLLECTION` - rss_entries (default)
 - `PROXY_MODE` - proxy-first (default), proxy-only, or direct-only
-- `ALERT_WEBHOOK_URL` - Slack webhook for system alerts
-- `CASE_MONITOR_WEBHOOK_URL` - Slack webhook for case monitoring
+- `ALERT_WEBHOOK_URL` - Slack webhook for system alerts (optional)
+- `CASE_MONITOR_WEBHOOK_URL` - Slack webhook for case monitoring (optional)
 - `MONITORED_CASE` - Case name to monitor (optional)
 
 Docker Compose reads from `.env` in project root automatically.
@@ -130,12 +130,13 @@ docker compose ps  # Should show 2 containers running
 sudo loginctl enable-linger $USER
 
 # Scanner services are templated at ~/.config/systemd/user/caser-scan@.service
+# 64 timer instances (caser-scan@0.timer through caser-scan@63.timer)
 # Monitor service at ~/.config/systemd/user/caser-monitor.service
 # Backup service at ~/.config/systemd/user/caser-backup.service
 
-# Enable and start all timers
+# Enable and start all timers (64 scan shards + monitor + backup)
 systemctl --user daemon-reload
-systemctl --user enable --now caser-scan@0.timer caser-scan@1.timer
+for i in {0..63}; do systemctl --user enable --now caser-scan@$i.timer; done
 systemctl --user enable --now caser-monitor.timer
 systemctl --user enable --now caser-backup.timer
 
@@ -144,7 +145,7 @@ systemctl --user list-timers | grep caser
 ```
 
 **Active Timers:**
-- `caser-scan@0.timer` / `caser-scan@1.timer`: Run shard pair every 10 minutes
+- `caser-scan@0.timer` through `caser-scan@63.timer`: 64 shards running every 2 minutes
 - `caser-monitor.timer`: Runs Firebase monitor every 2 minutes  
 - `caser-backup.timer`: Creates Typesense snapshots daily at 3 AM
 
@@ -235,11 +236,11 @@ Network Configuration:
 
 ## How It Works
 
-### RSS Scanning (Every 10 Minutes)
+### RSS Scanning (Every 2 Minutes)
 
-1. **Systemd timer triggers** `/home/sm/caser-search/src/rss_scanner.py`
-2. **Load seen IDs cache** from `data/seen_ids.txt` (128k entries)
-3. **For each feed** (322 total):
+1. **Systemd timer triggers** `/home/sm/caser-search/src/rss_scanner.py` for each shard
+2. **Load seen IDs cache** from `data/seen_ids.sqlite3` (197K+ entries)
+3. **For each feed** (354 total, divided across 64 shards):
    - Fetch RSS via Cloudflare Worker proxy (bypasses rate limits)
    - Parse entries with feedparser
    - **For govinfo feeds**: Check duplicate BEFORE fetching metadata (optimization!)
@@ -249,7 +250,7 @@ Network Configuration:
    - **Skip ZIP downloads** (optimization - we have the link, don't need 100MB+ files)
    - Batch upsert to Typesense (512 docs at a time)
    - Commit new IDs to cache
-4. **Save updated cache** to `data/seen_ids.txt`
+4. **Save updated cache** to `data/seen_ids.txt` (mirrored from SQLite)
 5. **Log results** to `logs/feed-scan.log` and `logs/scan-history.ndjson`
 
 To keep persistence reliable, each shard grabs an exclusive lock file (`data/scanner-shard-<index>.lock`) before it starts and coordinates duplicate detection through `data/seen_ids.sqlite3` (mirrored back to `data/seen_ids.txt`). Even if timers overlap, crash, or reboot mid-run, the cache stays intact.
@@ -581,11 +582,11 @@ systemctl --user restart caser-scan.timer
 - ZIP downloads: 503 errors, rate limiting
 
 ### After Optimizations
-- Full scan: 20-30 minutes
+- Per-shard scan: 8-10 seconds (64 shards running in parallel)
 - Govinfo feed (100 duplicates): ~1 second
 - No ZIP downloads: No rate limiting
 
-**Speed improvement: 6-9x faster**
+**Speed improvement: 20x+ faster with parallel sharding**
 
 ---
 
@@ -670,7 +671,30 @@ The system sends real-time Slack notifications using Mission Control style forma
 
 ## Changelog
 
-### November 2025 - v2.1 (Current)
+### November 2025 - v2.2 (Current)
+
+**System Updates:**
+- ✅ 64-shard parallel scanning (every 2 minutes)
+- ✅ 354 active RSS feeds (202 uscourts + 152 govinfo)
+- ✅ 197K+ documents indexed
+- ✅ 473MB database size
+- ✅ PID-specific temp files (eliminates race conditions)
+- ✅ WSL2 Ubuntu 24.04 environment
+- ✅ Docker containers: Caddy + Typesense 29.0
+- ✅ Systemd user services with timers
+- ✅ SQLite seen_ids store (29MB) + text backup
+- ✅ Daily automated backups with 7-day retention
+- ✅ Firebase push notification monitoring
+- ✅ Slack alerting with Mission Control formatting
+
+**Performance & Reliability:**
+- ✅ 64 parallel shards (8-10 seconds per shard)
+- ✅ Exclusive file locking prevents race conditions
+- ✅ Atomic cache writes with PID-specific temp files
+- ✅ Graceful error handling and retries
+- ✅ Security headers and rate limiting via Caddy
+
+### November 2025 - v2.1
 
 **System Updates:**
 - ✅ WSL2 Ubuntu 24.04 environment
@@ -713,9 +737,9 @@ Proprietary - CASER Legal, LLC
 
 ---
 
-**Version:** 2.1  
+**Version:** 2.2  
 **Last Updated:** November 11, 2025  
 **Status:** ✅ Operational  
-**Documents:** 1,214,078+  
-**Feeds:** 322  
+**Documents:** 197,732  
+**Feeds:** 354  
 **System:** WSL2 Ubuntu 24.04 + Docker

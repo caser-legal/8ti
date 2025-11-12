@@ -72,9 +72,6 @@ if [[ -n "${BACKUP_ENCRYPTION_KEY:-}" ]]; then
 else
   echo "⚠️ BACKUP_ENCRYPTION_KEY not set - backup stored unencrypted"
 fi
-else
-  printf '%s\n' "$SNAPSHOT_RESPONSE"
-fi
 
 # Backup seen_ids
 cp "$REPO_DIR/data/seen_ids.txt" "$BACKUP_DIR/seen_ids_$TIMESTAMP.txt"
