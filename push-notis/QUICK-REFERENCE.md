@@ -28,7 +28,7 @@ WSL2 Ubuntu 24.04
 │   ├── Typesense (localhost:8108)
 │   └── Caddy (ports 80/443)
 ├── Systemd User Services
-│   ├── caser-monitor.timer (every 5min)
+│   ├── caser-monitor.timer (every 2min)
 │   ├── caser-scan@0.timer (every 10min)
 │   └── caser-scan@1.timer (every 10min)
 └── Node.js Monitor (/home/sm/caser-search/push-notis/)
@@ -293,8 +293,8 @@ push-notis/
 - **User concurrency:** 4 (configurable)
 - **Keyword concurrency:** 4 per user (configurable)
 - **Typesense pagination:** 100 per page, max 3 pages
-- **Run duration:** < 5 minutes (typical)
-- **Cron schedule:** Every 5 minutes
+- **Run duration:** < 2 minutes (typical)
+- **Cron schedule:** Every 2 minutes
 
 ## 📞 Support
 

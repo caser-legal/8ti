@@ -610,28 +610,31 @@ TYPESENSE_MAX_PAGES=3
 **Service File:** `~/.config/systemd/user/caser-monitor.service`
 ```ini
 [Unit]
-Description=CASER Firebase Monitor
-After=docker.service
+Description=CASER Monitor - Check for new court filings
+After=network.target
 
 [Service]
 Type=oneshot
+User=sm
 WorkingDirectory=/home/sm/caser-search/push-notis
-ExecStart=/usr/bin/node monitor.js
-Environment=NODE_ENV=production
+ExecStart=/usr/bin/node /home/sm/caser-search/push-notis/monitor.js
+StandardOutput=append:/var/log/caser-monitor.log
+StandardError=append:/var/log/caser-monitor.log
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target
 ```
 
 **Timer File:** `~/.config/systemd/user/caser-monitor.timer`
 ```ini
 [Unit]
-Description=CASER Monitor Timer (every 5 minutes)
+Description=CASER Monitor Timer - Run every 2 minutes
+Requires=caser-monitor.service
 
 [Timer]
-OnBootSec=5min
-OnUnitActiveSec=5min
-Persistent=true
+OnBootSec=2min
+OnUnitActiveSec=2min
+AccuracySec=1s
 
 [Install]
 WantedBy=timers.target
@@ -658,7 +661,7 @@ journalctl --user -u caser-monitor.service -f
 journalctl --user -u caser-monitor.service -f
 
 # Check recent runs
-journalctl --user -u caser-monitor.service --since "1 hour ago" | grep "Monitor run complete"
+journalctl --user -u caser-monitor.service --since "1 hour ago" | grep "Complete"
 
 # Check errors
 journalctl --user -u caser-monitor.service --since "1 day ago" | grep "❌"

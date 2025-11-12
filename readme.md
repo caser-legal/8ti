@@ -48,7 +48,7 @@ A **self-hosted legal document search engine** that automatically monitors **322
 ✅ SSL encryption via Cloudflare + Let's Encrypt  
 ✅ Runs 24/7 on spare PC using Docker + WSL2  
 ✅ Daily automated backups (7-day retention)  
-✅ Push notifications via Firebase (every 5 minutes)  
+✅ Push notifications via Firebase (every 2 minutes)  
 ✅ **Mission Control Slack alerts** - Real-time scan status, milestones, errors  
 ✅ **Case monitoring** - Instant alerts for specific cases  
 ✅ **10MB feed size limit** - Prevents memory exhaustion  
@@ -143,8 +143,49 @@ systemctl --user list-timers | grep caser
 
 **Active Timers:**
 - `caser-scan@0.timer` / `caser-scan@1.timer`: Run shard pair every 10 minutes
-- `caser-monitor.timer`: Runs Firebase monitor every 5 minutes  
+- `caser-monitor.timer`: Runs Firebase monitor every 2 minutes  
 - `caser-backup.timer`: Creates Typesense snapshots daily at 3 AM
+
+**8. Setup Push Notifications (Optional)**
+
+The system includes Firebase Cloud Messaging (FCM) push notifications for iOS app alerts.
+
+```bash
+# Install Node.js 20+ (if not already installed)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Setup push notification monitor
+cd ~/caser-search/push-notis
+npm install
+
+# Create .env file
+cp env.example .env
+nano .env
+```
+
+Configure the following in `push-notis/.env`:
+- `SERVICE_ACCOUNT_PATH` - Path to Firebase service account JSON (e.g., `/home/sm/secrets/firebase-service-account.json`)
+- `TYPESENSE_HOST` - localhost (default)
+- `TYPESENSE_PORT` - 8108 (default)
+- `TYPESENSE_PROTOCOL` - http (default)
+- `TYPESENSE_API_KEY` - Same admin key from main `.env`
+- `USER_CONCURRENCY` - 4 (default)
+- `KEYWORD_CONCURRENCY` - 4 (default)
+
+**Get Firebase Service Account:**
+1. Go to Firebase Console → Project Settings → Service Accounts
+2. Click "Generate new private key"
+3. Save JSON file to `/home/sm/secrets/firebase-service-account.json`
+4. Set permissions: `chmod 600 /home/sm/secrets/firebase-service-account.json`
+
+**Test the monitor:**
+```bash
+cd ~/caser-search/push-notis
+node monitor.js
+```
+
+The systemd timer (`caser-monitor.timer`) is already enabled and will run every 2 minutes automatically.
 
 **Current Status:**
 ```bash
@@ -158,7 +199,7 @@ docker ps
 systemctl --user status caser-scan@0.timer caser-scan@1.timer
 ```
 
-**8. Setup Network** (PowerShell as Admin)
+**9. Setup Network** (PowerShell as Admin)
 ```powershell
 $wslIp = (wsl -d Ubuntu-24.04 -- hostname -I).Split()[0]
 netsh interface portproxy add v4tov4 listenport=80 listenaddress=0.0.0.0 connectport=80 connectaddress=$wslIp
