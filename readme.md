@@ -1,6 +1,6 @@
+### 8TI by Adam Doherty
 
-
-# CASER Search - Self-Hosted Legal Document Search Engine
+# Self-Hosted Legal Document Search Engine
 
 [![Status](https://img.shields.io/badge/status-production-brightgreen)]()
 [![Documents](https://img.shields.io/badge/documents-197K+-blue)]()
