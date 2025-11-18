@@ -1,6 +1,7 @@
-### 8TI by Adam Doherty
 
 # Self-Hosted Legal Document Search Engine
+### 8TI by Adam Doherty
+
 
 [![Status](https://img.shields.io/badge/status-production-brightgreen)]()
 [![Documents](https://img.shields.io/badge/documents-197K+-blue)]()
