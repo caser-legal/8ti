@@ -1,0 +1,40 @@
+# Environment and secrets
+.env
+config/.env
+config/.env.local
+*.key
+*.pem
+*.p8
+*firebase*.json
+push-notis/.env
+push-notis/node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+
+# Data and logs
+data/
+caddy-data/
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Backups
+*.tar.gz
+*.zip
+*.bak
+*:\Zone.Identifier
+backups/

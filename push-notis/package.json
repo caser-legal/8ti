@@ -1,0 +1,25 @@
+{
+  "name": "caser-monitor",
+  "version": "1.0.0",
+  "description": "Server-side monitor for CASER alerts (runs without Firebase Functions).",
+  "type": "module",
+  "main": "monitor.js",
+  "scripts": {
+    "start": "node monitor.js",
+    "lint": "eslint --ext .js ."
+  },
+  "keywords": [
+    "caser",
+    "firebase",
+    "typesense",
+    "monitor"
+  ],
+  "author": "CASER",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "firebase-admin": "^12.0.0",
+    "p-map": "^6.0.0",
+    "typesense": "^1.6.0"
+  }
+}

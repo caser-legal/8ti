@@ -1,0 +1,26 @@
+services:
+  typesense:
+    image: typesense/typesense:29.0
+    restart: unless-stopped
+    environment:
+      TYPESENSE_API_KEY: ${TS_ADMIN_KEY}
+      TYPESENSE_DATA_DIR: /data
+      TYPESENSE_ENABLE_CORS: "false"
+    volumes:
+      - ./data:/data
+    ports:
+      - "127.0.0.1:8108:8108"  # Localhost only - not exposed to external network
+
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile.caddy
+    restart: unless-stopped
+    environment:
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy-data:/data
+    ports:
+      - "80:80"
+      - "443:443"

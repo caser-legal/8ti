@@ -1,0 +1,14 @@
+[Unit]
+Description=CASER Monitor - Check for new court filings
+After=network.target
+
+[Service]
+Type=oneshot
+User=sm
+WorkingDirectory=/opt/8ti/push-notis
+ExecStart=/usr/bin/node /opt/8ti/push-notis/monitor.js
+StandardOutput=append:/var/log/caser-monitor.log
+StandardError=append:/var/log/caser-monitor.log
+
+[Install]
+WantedBy=multi-user.target
